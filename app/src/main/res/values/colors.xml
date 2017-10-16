@@ -4,4 +4,7 @@
     <color name="colorPrimaryDark">#000</color>
     <color name="colorAccent">#FF4081</color>
     <color name="colorText">#FFF</color>
+    <color name="alertBackground">#EED3D7</color>
+    <color name="alertText">#B94A48</color>
+    <color name="alertButton">#D9534E</color>
 </resources>

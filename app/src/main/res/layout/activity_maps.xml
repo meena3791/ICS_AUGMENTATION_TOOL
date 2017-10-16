@@ -32,7 +32,39 @@
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_below="@+id/my_toolbar" />
 
+    <android.support.v7.widget.CardView
+        android:id="@+id/alertCard"
+        android:layout_width="300dp"
+        android:layout_height="100dp"
+        android:visibility="invisible"
+        android:layout_marginStart="126dp"
+        android:layout_marginTop="39dp"
+        android:layout_below="@+id/my_toolbar"
+        android:layout_alignParentStart="true">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:id="@+id/alertText"
+            android:background="@color/alertBackground"
+            android:textColor="@color/alertText"/>
 
+
+    </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <Button
+        android:id="@+id/takeActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/alertButton"
+        android:textColor="@color/colorText"
+        android:layout_alignBottom="@+id/alertCard"
+        android:layout_alignEnd="@+id/alertCard"
+        android:visibility="invisible"
+        android:text="Take Action" />
 
 
 </RelativeLayout>
