@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ICSAUGMENTATIONTOOL</string>
     <string name="title_activity_maps">ICS AUGMENTATION TOOL</string>
+    <string name="take_action">Take Action</string>
 </resources>

@@ -3,11 +3,13 @@ package meenakshinagarajan.example.com.icsaugmentationtool;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -27,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static java.lang.Math.round;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -39,6 +43,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     LatLng yourLocation = new LatLng(yourLatitude, yourLongitude);
     ArrayList<LatLng> points;
     PolylineOptions lineOptions = null;
+    float distance=0;
     Geocoder geocoder;
     List<Address> incidentAddress = getAddress(incidentLatitude,incidentLongitude);
 
@@ -76,6 +81,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         address = getAddress(yourLatitude, yourLongitude);
         Marker currentLocationMarker=mMap.addMarker(new MarkerOptions().position(yourLocation).title("You are here:" + address.get(0).getAddressLine(0)));
+
+        //distance between yourlocation and incident location
+        Location orgLocation = new Location("point A");
+        Location destLocation = new Location("point B");
+        orgLocation.setLatitude(yourLatitude);
+        orgLocation.setLongitude(yourLongitude);
+        destLocation.setLatitude(incidentLatitude);
+        destLocation.setLongitude(incidentLongitude);
+        distance =orgLocation.distanceTo(destLocation);
+        final float distanceInMiles = (float) round((distance*0.000621371192));
+        Log.d("distance:",String.valueOf(distanceInMiles));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
         currentLocationMarker.showInfoWindow();
@@ -92,7 +108,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void run() {
                 alertCard.setVisibility(View.VISIBLE);
-                alertText.setText("Oh Snap! Vehicular accident at "+incidentAddress.get(0).getAddressLine(0));
+                alertText.setText("Oh Snap! Vehicular accident at "+incidentAddress.get(0).getAddressLine(0)+" "+distanceInMiles+" "+"miles from your location");
                 takeActionButton.setVisibility(View.VISIBLE);
             }
         }, 10000);
@@ -114,10 +130,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-
-
-
     }
+
+
 
 
     public List getAddress(double Lat, double Lng) {
@@ -130,5 +145,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
    return address;
 
     }
+
+
 }
 
