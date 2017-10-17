@@ -12,12 +12,15 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -127,6 +130,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Polyline line = mMap.addPolyline(new PolylineOptions()
                                 .add(new LatLng(yourLatitude, yourLongitude), new LatLng(incidentLatitude,   incidentLongitude))
                                 .width(2).color(Color.RED).geodesic(true));
+                CircleOptions circleOptions = new CircleOptions()
+                        .center(new LatLng(incidentLatitude,incidentLongitude))
+                        .radius(1000).strokeWidth(10)
+                                .strokeColor(Color.GREEN)
+                                .fillColor(Color.argb(128, 255, 0, 0))
+                                .clickable(true);
+                Circle circle = mMap.addCircle(circleOptions);
+                alertCard.setVisibility(View.INVISIBLE);
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                ResizeAnimation resizeAnimation = new ResizeAnimation(
+                        view,
+                        500,
+                        RelativeLayout.LayoutParams.MATCH_PARENT
+                );
+                resizeAnimation.setDuration(2000);
+                view.startAnimation(resizeAnimation);
             }
         });
 

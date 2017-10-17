@@ -27,6 +27,7 @@
     xmlns:map="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:id="@+id/map"
     tools:context="meenakshinagarajan.example.com.icsaugmentationtool.MapsActivity"
     android:name="com.google.android.gms.maps.SupportMapFragment"
