@@ -14,6 +14,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.support.design.widget.TabLayout;
+
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -37,6 +39,7 @@ import static java.lang.Math.round;
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private RelativeLayout mMapView;
     List<Address> address = null;
     private double yourLatitude = 39.7845;
     private double yourLongitude = -84.0580;
@@ -81,7 +84,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         // Add a marker in Sydney and move the camera
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        //Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         address = getAddress(yourLatitude, yourLongitude);
         Marker currentLocationMarker=mMap.addMarker(new MarkerOptions().position(yourLocation).title("You are here:" + address.get(0).getAddressLine(0)));
 
@@ -103,6 +106,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final CardView alertCard = (CardView) findViewById(R.id.alertCard);
         final TextView alertText = (TextView) findViewById(R.id.alertText);
         final Button takeActionButton = (Button) findViewById(R.id.takeActionButton);
+        final TabLayout tabLayout = (TabLayout) findViewById(R.id.tabView);
 
 
 
@@ -139,13 +143,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Circle circle = mMap.addCircle(circleOptions);
                 alertCard.setVisibility(View.INVISIBLE);
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                ResizeAnimation resizeAnimation = new ResizeAnimation(
-                        view,
-                        500,
-                        RelativeLayout.LayoutParams.MATCH_PARENT
-                );
+                mMapView = (RelativeLayout) findViewById(R.id.rl);
+                ResizeAnimation resizeAnimation = new ResizeAnimation(mMapView,650,mMapView.getWidth());
                 resizeAnimation.setDuration(2000);
-                view.startAnimation(resizeAnimation);
+                mMapView.startAnimation(resizeAnimation);
+                mMapView.requestLayout();
+
+                //Tab Layout
+                tabLayout.setVisibility(View.VISIBLE);
+                tabLayout.addTab(tabLayout.newTab().setText("Tab 1"));
+                tabLayout.addTab(tabLayout.newTab().setText("Tab 2"));
+
             }
         });
 
