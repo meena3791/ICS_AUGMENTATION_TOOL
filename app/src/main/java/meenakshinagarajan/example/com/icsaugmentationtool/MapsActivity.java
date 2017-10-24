@@ -35,7 +35,10 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +57,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int PROXIMITY_RADIUS = 10000;
     ExpandableListAdapter listAdapter;
     List<String> listDataHeader;
+    List<String> listDateChild;
     HashMap<String, List<String>> listDataChild;
     LatLng incidentLocation = new LatLng(incidentLatitude, incidentLongitude);
     LatLng yourLocation = new LatLng(yourLatitude, yourLongitude);
@@ -62,7 +66,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     float distance = 0;
     Geocoder geocoder;
     List<Address> incidentAddress = getAddress(incidentLatitude, incidentLongitude);
-
+    List<String> oldUpdates=new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -272,9 +276,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //expandable list view
                 expListView.setVisibility(View.VISIBLE);
-                prepareListData();
-                listAdapter = new ExpandableListAdapter(MapsActivity.this, listDataHeader, listDataChild);
-                expListView.setAdapter(listAdapter);
+                final String[] data={"Vehicular accident at Middletown","EMS arrived","Symptoms found","Chemical found"};
+                final Handler handler = new Handler();
+
+                handler.postDelayed(new Runnable() {
+                    int i=0;
+                    int j=-1;
+                    @Override
+                    public void run() {
+
+                        if(i<data.length) {
+                            prepareListData(data[i], data[j + 1]);
+                            listAdapter = new ExpandableListAdapter(MapsActivity.this, listDataHeader, listDataChild);
+                            expListView.setAdapter(listAdapter);
+                        }else{
+
+                        }
+
+                        i=i+1;
+                        j=j+1;
+                        handler.postDelayed(this, 5000);
+
+                    }
+
+
+                }, 1000);
+
+
 
 
 
@@ -310,21 +338,36 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return (googlePlacesUrl.toString());
     }
 
-    private void prepareListData() {
+    private void prepareListData(String data,String data1) {
 
         listDataHeader = new ArrayList<String>();
         listDataChild = new HashMap<String, List<String>>();
+        listDateChild = new ArrayList<String>();
+
+        //Adding date
+        DateFormat dateFormatter = new SimpleDateFormat("yy/MM/dd hh:mm:ss");
+        dateFormatter.setLenient(false);
+        Date today = new Date();
+        String s = dateFormatter.format(today);
+        listDateChild.add(s);
 
         // Adding child data
-        listDataHeader.add("Incident Updates");
+        listDataHeader.add("Incident Updates:"+data);
 
         // Adding child data
         List<String> incidentUpdates = new ArrayList<String>();
-        incidentUpdates.add("Vehicular accident at Middletown");
-        incidentUpdates.add("EMS arrived");
-        incidentUpdates.add("Symptoms found");
-        incidentUpdates.add("Chemical found");
+        if (oldUpdates.isEmpty()) {
+
+        } else {
+            for(int i=0;i<oldUpdates.size();i++){
+                incidentUpdates.add(0,oldUpdates.get(i));
+            }
+        }
+        incidentUpdates.add(0,data1);
         listDataChild.put(listDataHeader.get(0), incidentUpdates); // Header, Child data
+        oldUpdates.add(data1);
+
+
 
     }
 
