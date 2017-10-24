@@ -2,4 +2,8 @@
     <string name="app_name">ICSAUGMENTATIONTOOL</string>
     <string name="title_activity_maps">ICS AUGMENTATION TOOL</string>
     <string name="take_action">Take Action</string>
+    <string name="hospitals">HOSPITAL</string>
+    <string name="schools">SCHOOL</string>
+    <string name="traffic">TRAFFIC</string>
+    <string name="google_maps_key">AIzaSyCboTl9o1tMK_8rKhcxL5ki20D0Ka8eEBM</string>
 </resources>

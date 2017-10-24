@@ -1,21 +1,26 @@
 package meenakshinagarajan.example.com.icsaugmentationtool;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ExpandableListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.support.design.widget.TabLayout;
-
+import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -31,6 +36,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -43,15 +49,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<Address> address = null;
     private double yourLatitude = 39.7845;
     private double yourLongitude = -84.0580;
-    private double incidentLatitude = 39.533860;
+    private double incidentLatitude = 39.53386;
     private double incidentLongitude = -84.371423;
+    private int PROXIMITY_RADIUS = 10000;
+    ExpandableListAdapter listAdapter;
+    List<String> listDataHeader;
+    HashMap<String, List<String>> listDataChild;
     LatLng incidentLocation = new LatLng(incidentLatitude, incidentLongitude);
     LatLng yourLocation = new LatLng(yourLatitude, yourLongitude);
     ArrayList<LatLng> points;
     PolylineOptions lineOptions = null;
-    float distance=0;
+    float distance = 0;
     Geocoder geocoder;
-    List<Address> incidentAddress = getAddress(incidentLatitude,incidentLongitude);
+    List<Address> incidentAddress = getAddress(incidentLatitude, incidentLongitude);
 
 
     @Override
@@ -69,8 +79,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         getSupportActionBar().setTitle(getResources().getString(R.string.title_activity_maps));
 
 
-
     }
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -86,7 +96,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Add a marker in Sydney and move the camera
         //Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         address = getAddress(yourLatitude, yourLongitude);
-        Marker currentLocationMarker=mMap.addMarker(new MarkerOptions().position(yourLocation).title("You are here:" + address.get(0).getAddressLine(0)));
+        Marker currentLocationMarker = mMap.addMarker(new MarkerOptions().position(yourLocation).title("You are here:" + address.get(0).getAddressLine(0)));
+
+        //Location enabled true
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        //mMap.setMyLocationEnabled(true);
+
 
         //distance between yourlocation and incident location
         Location orgLocation = new Location("point A");
@@ -107,6 +131,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final TextView alertText = (TextView) findViewById(R.id.alertText);
         final Button takeActionButton = (Button) findViewById(R.id.takeActionButton);
         final TabLayout tabLayout = (TabLayout) findViewById(R.id.tabView);
+        final ToggleButton hospitalButton = (ToggleButton) findViewById(R.id.hospitalButton);
+        final ToggleButton schoolButton = (ToggleButton) findViewById(R.id.schoolButton);
+        final ToggleButton trafficButton = (ToggleButton) findViewById(R.id.trafficButton);
+        final ExpandableListView expListView = (ExpandableListView) findViewById(R.id.expandableListView);
 
 
 
@@ -143,16 +171,113 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Circle circle = mMap.addCircle(circleOptions);
                 alertCard.setVisibility(View.INVISIBLE);
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+
+                //Resize map fragment
                 mMapView = (RelativeLayout) findViewById(R.id.rl);
                 ResizeAnimation resizeAnimation = new ResizeAnimation(mMapView,650,mMapView.getWidth());
-                resizeAnimation.setDuration(2000);
+                resizeAnimation.setDuration(500);
                 mMapView.startAnimation(resizeAnimation);
                 mMapView.requestLayout();
 
+
+
                 //Tab Layout
                 tabLayout.setVisibility(View.VISIBLE);
-                tabLayout.addTab(tabLayout.newTab().setText("Tab 1"));
-                tabLayout.addTab(tabLayout.newTab().setText("Tab 2"));
+                tabLayout.addTab(tabLayout.newTab().setText("Incident Details"));
+                tabLayout.addTab(tabLayout.newTab().setText("Predicted Risks"));
+
+                //display nearby hospitals
+                hospitalButton.setVisibility(View.VISIBLE);
+                hospitalButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    String Hospital = "hospital";
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked) {
+                            // The toggle is enabled
+                            String url = getUrl(incidentLatitude, incidentLongitude, Hospital);
+                            Object[] DataTransfer = new Object[2];
+                            DataTransfer[0] = mMap;
+                            DataTransfer[1] = url;
+                            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+                            getNearbyPlacesData.execute(DataTransfer);
+                        } else {
+                            // The toggle is disabled
+                            mMap.clear();
+                            Marker incidentLocationMarker = mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Incident Location:" +incidentAddress.get(0).getAddressLine(0)));
+                            incidentLocationMarker.showInfoWindow();
+                            mMap.addPolyline(new PolylineOptions()
+                                    .add(new LatLng(yourLatitude, yourLongitude), new LatLng(incidentLatitude,   incidentLongitude))
+                                    .width(2).color(Color.RED).geodesic(true));
+                            CircleOptions circleOptions = new CircleOptions()
+                                    .center(new LatLng(incidentLatitude,incidentLongitude))
+                                    .radius(1000).strokeWidth(10)
+                                    .strokeColor(Color.GREEN)
+                                    .fillColor(Color.argb(128, 255, 0, 0))
+                                    .clickable(true);
+                            Circle circle = mMap.addCircle(circleOptions);
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+
+                        }
+                    }
+                });
+
+                //display nearby schools
+                schoolButton.setVisibility(View.VISIBLE);
+                schoolButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    String School = "school";
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked) {
+                            // The toggle is enabled
+                            String url = getUrl(incidentLatitude, incidentLongitude, School);
+                            Object[] DataTransfer = new Object[2];
+                            DataTransfer[0] = mMap;
+                            DataTransfer[1] = url;
+                            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+                            getNearbyPlacesData.execute(DataTransfer);
+                        } else {
+                            // The toggle is disabled
+                            mMap.clear();
+                            Marker incidentLocationMarker = mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Incident Location:" +incidentAddress.get(0).getAddressLine(0)));
+                            incidentLocationMarker.showInfoWindow();
+                            mMap.addPolyline(new PolylineOptions()
+                                    .add(new LatLng(yourLatitude, yourLongitude), new LatLng(incidentLatitude,   incidentLongitude))
+                                    .width(2).color(Color.RED).geodesic(true));
+                            CircleOptions circleOptions = new CircleOptions()
+                                    .center(new LatLng(incidentLatitude,incidentLongitude))
+                                    .radius(1000).strokeWidth(10)
+                                    .strokeColor(Color.GREEN)
+                                    .fillColor(Color.argb(128, 255, 0, 0))
+                                    .clickable(true);
+                            Circle circle = mMap.addCircle(circleOptions);
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+
+                        }
+                    }
+                });
+
+                //traffic enable/disable
+                trafficButton.setVisibility(View.VISIBLE);
+                trafficButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+
+                    @Override
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                        if (isChecked) {
+                            mMap.setTrafficEnabled(true);
+                        }else{
+                            mMap.setTrafficEnabled(false);
+                        }
+                    }
+                });
+
+                //expandable list view
+                expListView.setVisibility(View.VISIBLE);
+                prepareListData();
+                listAdapter = new ExpandableListAdapter(MapsActivity.this, listDataHeader, listDataChild);
+                expListView.setAdapter(listAdapter);
+
+
+
 
             }
         });
@@ -172,6 +297,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
    return address;
 
     }
+
+    private String getUrl(double latitude, double longitude, String nearbyPlace) {
+
+        StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        googlePlacesUrl.append("location=" + latitude + "," + longitude);
+        googlePlacesUrl.append("&radius=" + PROXIMITY_RADIUS);
+        googlePlacesUrl.append("&type=" + nearbyPlace);
+        googlePlacesUrl.append("&sensor=true");
+        googlePlacesUrl.append("&key=" + "AIzaSyCboTl9o1tMK_8rKhcxL5ki20D0Ka8eEBM");
+        Log.d("getUrl", googlePlacesUrl.toString());
+        return (googlePlacesUrl.toString());
+    }
+
+    private void prepareListData() {
+
+        listDataHeader = new ArrayList<String>();
+        listDataChild = new HashMap<String, List<String>>();
+
+        // Adding child data
+        listDataHeader.add("Incident Updates");
+
+        // Adding child data
+        List<String> incidentUpdates = new ArrayList<String>();
+        incidentUpdates.add("Vehicular accident at Middletown");
+        incidentUpdates.add("EMS arrived");
+        incidentUpdates.add("Symptoms found");
+        incidentUpdates.add("Chemical found");
+        listDataChild.put(listDataHeader.get(0), incidentUpdates); // Header, Child data
+
+    }
+
 
 
 }
