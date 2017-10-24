@@ -8,6 +8,10 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -52,12 +56,18 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
             convertView = infalInflater.inflate(R.layout.list_item, null);
         }
 
+        //DateFormat dateFormatter = new SimpleDateFormat("yy/MM/dd hh:mm:ss");
+        //dateFormatter.setLenient(false);
+        //Calendar cal = Calendar.getInstance();
+        //String s = dateFormatter.format(cal.getTime());
+
         TextView txtListChild = (TextView) convertView
                 .findViewById(R.id.lblListItem);
+        txtListChild.setText(childText);
+
         TextView txtListDateChild = (TextView) convertView
                 .findViewById(R.id.dateTime);
-
-        txtListChild.setText(childText);
+        txtListDateChild.setText(Calendar.getInstance().getTime().toString());
         return convertView;
     }
 

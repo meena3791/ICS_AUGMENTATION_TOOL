@@ -35,10 +35,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -57,6 +54,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int PROXIMITY_RADIUS = 10000;
     ExpandableListAdapter listAdapter;
     List<String> listDataHeader;
+    String s;
     List<String> listDateChild;
     HashMap<String, List<String>> listDataChild;
     LatLng incidentLocation = new LatLng(incidentLatitude, incidentLongitude);
@@ -276,7 +274,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //expandable list view
                 expListView.setVisibility(View.VISIBLE);
-                final String[] data={"Vehicular accident at Middletown","EMS arrived","Symptoms found","Chemical found"};
+                final String[] data={"Vehicular accident at Middletown","Vehicles involved: Truck, Car, Police vehicle","First responders: Middletown police department","Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver found","Police van driver exhibits edema"};
                 final Handler handler = new Handler();
 
                 handler.postDelayed(new Runnable() {
@@ -343,13 +341,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         listDataHeader = new ArrayList<String>();
         listDataChild = new HashMap<String, List<String>>();
         listDateChild = new ArrayList<String>();
-
-        //Adding date
-        DateFormat dateFormatter = new SimpleDateFormat("yy/MM/dd hh:mm:ss");
-        dateFormatter.setLenient(false);
-        Date today = new Date();
-        String s = dateFormatter.format(today);
-        listDateChild.add(s);
 
         // Adding child data
         listDataHeader.add("Incident Updates:"+data);
