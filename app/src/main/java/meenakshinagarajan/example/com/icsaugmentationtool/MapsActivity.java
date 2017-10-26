@@ -56,6 +56,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int PROXIMITY_RADIUS = 10000;
     ExpandableListAdapter listAdapter;
     ExpandableIncidentListAdapter incidentListAdapter;
+    ExpandableRiskAdapter riskListAdapter;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
     LatLng incidentLocation = new LatLng(incidentLatitude, incidentLongitude);
@@ -71,6 +72,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<String> respondersList = new ArrayList<String>();
     List<String> bystandersList = new ArrayList<String>();
     List<String> symptomsList = new ArrayList<String>();
+    List<String> riskUpdates = new ArrayList<String>();
+    List<String> riskDataHeader = new ArrayList<String>();
+    HashMap<String, List<String>> riskDataChild = new HashMap<String, List<String>>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +148,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final ToggleButton trafficButton = (ToggleButton) findViewById(R.id.trafficButton);
         final ExpandableListView expListView = (ExpandableListView) findViewById(R.id.expandableListView);
         final ExpandableListView incidentDetailsListView = (ExpandableListView) findViewById(R.id.incidentDetailsListView);
-
+        final ExpandableListView riskDetailsListView = (ExpandableListView) findViewById(R.id.riskDetailsListView);
 
 
         //alertbox after 5 seconds
@@ -194,44 +198,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 tabLayout.setVisibility(View.VISIBLE);
                 tabLayout.addTab(tabLayout.newTab().setText("Incident Details"));
                 tabLayout.addTab(tabLayout.newTab().setText("Predicted Risks"));
-                TabLayout.Tab tab=tabLayout.getTabAt(0);
-                tab.select();
+                //TabLayout.Tab tab=tabLayout.getTabAt(0);
+                //tab.select();
                 tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager) {
                     @Override
                     public void onTabSelected(TabLayout.Tab tab) {
                         switch (tab.getPosition()){
                             case 0:
                                 incidentDetailsListView.setVisibility(View.VISIBLE);
+                                riskDetailsListView.setVisibility(View.INVISIBLE);
                             case 1:
-                                //incidentDetailsListView.setVisibility(View.GONE);
-
                         }
 
                     }
-                    @Override
+                   @Override
                     public void onTabUnselected(TabLayout.Tab tab) {
                         switch (tab.getPosition()){
                             case 0:
-                                incidentDetailsListView.setVisibility(View.GONE);
-
+                                incidentDetailsListView.setVisibility(View.INVISIBLE);
+                                riskDetailsListView.setVisibility(View.VISIBLE);
                             case 1:
-                                //incidentDetailsListView.setVisibility(View.VISIBLE);
-
-                        }
-                    }
-                    @Override
-                    public void onTabReselected(TabLayout.Tab tab) {
-                        switch (tab.getPosition()){
-                            case 0:
-                                incidentDetailsListView.setVisibility(View.VISIBLE);
-                            case 1:
-                                //incidentDetailsListView.setVisibility(View.GONE);
-
                         }
                     }
                 });
-
-
 
 
                 //display nearby hospitals
@@ -353,7 +342,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 }, 1000);
 
-
+               /* prepareRiskData("Vehicular Accident Exposure");
+                riskListAdapter = new ExpandableRiskAdapter(MapsActivity.this, riskDataHeader, riskDataChild);
+                riskDetailsListView.setAdapter(riskListAdapter);*/
 
 
 
@@ -398,7 +389,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //Adding date
         String s = Calendar.getInstance().getTime().toString();
 
-
         // Adding child data
         listDataHeader.add("Incident Updates:"+data);
 
@@ -411,23 +401,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 incidentUpdates.add(0,oldUpdates.get(i));
             }
         }
-
-
         incidentUpdates.add(0,data1);
         listDataChild.put(listDataHeader.get(0),(incidentUpdates));// Header, Child data
         oldUpdates.add(data1);
+    }
 
+    private void prepareRiskData(String data) {
 
+        // Adding child data
+        riskDataHeader.add(data);
 
+        // Adding child data
+        riskUpdates.add("can cause");
+        riskUpdates.add("cuts");
 
-
-
-
+        riskUpdates.add(0,data);
+        riskDataChild.put(riskDataHeader.get(0),(riskUpdates));// Header, Child data
+        //oldUpdates.add(data1);
     }
 
     private void prepareIncidentListData(String data) {
-
-
 
         if(data.contains("Vehicular accident")){
             // Adding child data
@@ -475,10 +468,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
     }
-
-
-
-
 
 }
 

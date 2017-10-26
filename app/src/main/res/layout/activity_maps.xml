@@ -148,6 +148,17 @@
         android:visibility="invisible"
         android:layout_alignParentBottom="true"
         android:layout_below="@+id/tabView" />
+    <ExpandableListView
+        android:layout_width="550dp"
+        android:layout_height="300dp"
+        android:layout_marginLeft="490dp"
+        android:id="@+id/riskDetailsListView"
+        android:layout_alignParentStart="true"
+        android:background="@color/colorPrimary"
+        android:visibility="invisible"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/tabView" />
+
 
 
 </RelativeLayout>
