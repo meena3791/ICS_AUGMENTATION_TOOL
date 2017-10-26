@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -36,6 +37,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -53,18 +55,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double incidentLongitude = -84.371423;
     private int PROXIMITY_RADIUS = 10000;
     ExpandableListAdapter listAdapter;
+    ExpandableIncidentListAdapter incidentListAdapter;
     List<String> listDataHeader;
-    String s;
-    List<String> listDateChild;
     HashMap<String, List<String>> listDataChild;
+    List<String> incidentListDataHeader;
+    HashMap<String, List<String>> incidentListDataChild;
     LatLng incidentLocation = new LatLng(incidentLatitude, incidentLongitude);
     LatLng yourLocation = new LatLng(yourLatitude, yourLongitude);
-    ArrayList<LatLng> points;
-    PolylineOptions lineOptions = null;
     float distance = 0;
     Geocoder geocoder;
     List<Address> incidentAddress = getAddress(incidentLatitude, incidentLongitude);
     List<String> oldUpdates=new ArrayList<String>();
+    private ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,6 +139,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final ToggleButton schoolButton = (ToggleButton) findViewById(R.id.schoolButton);
         final ToggleButton trafficButton = (ToggleButton) findViewById(R.id.trafficButton);
         final ExpandableListView expListView = (ExpandableListView) findViewById(R.id.expandableListView);
+        final ExpandableListView incidentDetailsListView = (ExpandableListView) findViewById(R.id.incidentDetailsListView);
 
 
 
@@ -187,6 +190,45 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 tabLayout.setVisibility(View.VISIBLE);
                 tabLayout.addTab(tabLayout.newTab().setText("Incident Details"));
                 tabLayout.addTab(tabLayout.newTab().setText("Predicted Risks"));
+                TabLayout.Tab tab=tabLayout.getTabAt(0);
+                tab.select();
+                tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager) {
+                    @Override
+                    public void onTabSelected(TabLayout.Tab tab) {
+                        switch (tab.getPosition()){
+                            case 0:
+                                incidentDetailsListView.setVisibility(View.VISIBLE);
+                            case 1:
+                                //incidentDetailsListView.setVisibility(View.GONE);
+
+                        }
+
+                    }
+                    @Override
+                    public void onTabUnselected(TabLayout.Tab tab) {
+                        switch (tab.getPosition()){
+                            case 0:
+                                incidentDetailsListView.setVisibility(View.GONE);
+
+                            case 1:
+                                //incidentDetailsListView.setVisibility(View.VISIBLE);
+
+                        }
+                    }
+                    @Override
+                    public void onTabReselected(TabLayout.Tab tab) {
+                        switch (tab.getPosition()){
+                            case 0:
+                                incidentDetailsListView.setVisibility(View.VISIBLE);
+                            case 1:
+                                //incidentDetailsListView.setVisibility(View.GONE);
+
+                        }
+                    }
+                });
+
+
+
 
                 //display nearby hospitals
                 hospitalButton.setVisibility(View.VISIBLE);
@@ -274,7 +316,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //expandable list view
                 expListView.setVisibility(View.VISIBLE);
-                final String[] data={"Vehicular accident at Middletown","Vehicles involved: Truck, Car, Police vehicle","First responders: Middletown police department","Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver found","Police van driver exhibits edema"};
+                final String[] data={"Vehicular accident at Middletown","Vehicles involved: Chemical truck, Car, Police vehicle","First responders: Middletown police department","Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver found","Police van driver exhibits edema"};
                 final Handler handler = new Handler();
 
                 handler.postDelayed(new Runnable() {
@@ -287,9 +329,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             prepareListData(data[i], data[j + 1]);
                             listAdapter = new ExpandableListAdapter(MapsActivity.this, listDataHeader, listDataChild);
                             expListView.setAdapter(listAdapter);
+                            prepareIncidentListData(data[i]);
+                            incidentListAdapter = new ExpandableIncidentListAdapter(MapsActivity.this, incidentListDataHeader, incidentListDataChild);
+                            incidentDetailsListView.setAdapter(incidentListAdapter);
+
                         }else{
 
                         }
+
+
 
                         i=i+1;
                         j=j+1;
@@ -339,8 +387,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void prepareListData(String data,String data1) {
 
         listDataHeader = new ArrayList<String>();
+
         listDataChild = new HashMap<String, List<String>>();
-        listDateChild = new ArrayList<String>();
+
+        //Adding date
+        String s = Calendar.getInstance().getTime().toString();
+
 
         // Adding child data
         listDataHeader.add("Incident Updates:"+data);
@@ -354,13 +406,45 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 incidentUpdates.add(0,oldUpdates.get(i));
             }
         }
+
+
         incidentUpdates.add(0,data1);
-        listDataChild.put(listDataHeader.get(0), incidentUpdates); // Header, Child data
+        listDataChild.put(listDataHeader.get(0),(incidentUpdates));// Header, Child data
         oldUpdates.add(data1);
 
 
 
+
+
+
+
     }
+
+    private void prepareIncidentListData(String data) {
+
+        if(data.contains("Vehicular accident")){
+            incidentListDataHeader = new ArrayList<String>();
+            incidentListDataChild = new HashMap<String,List<String>>();
+
+            // Adding child data
+            incidentListDataHeader.add("Hazards");
+
+            // Adding child data
+            List<String> incidentListDetails = new ArrayList<String>();
+            incidentListDetails.add("Vehicular accident");
+            incidentListDataChild.put(incidentListDataHeader.get(0), incidentListDetails); // Header, Child data
+
+
+
+        }
+
+
+
+
+
+    }
+
+
 
 
 
