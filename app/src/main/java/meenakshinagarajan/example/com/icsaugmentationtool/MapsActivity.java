@@ -58,8 +58,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ExpandableIncidentListAdapter incidentListAdapter;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
-    List<String> incidentListDataHeader;
-    HashMap<String, List<String>> incidentListDataChild;
     LatLng incidentLocation = new LatLng(incidentLatitude, incidentLongitude);
     LatLng yourLocation = new LatLng(yourLatitude, yourLongitude);
     float distance = 0;
@@ -67,6 +65,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<Address> incidentAddress = getAddress(incidentLatitude, incidentLongitude);
     List<String> oldUpdates=new ArrayList<String>();
     private ViewPager mViewPager;
+    List<String> incidentListDataHeader = new ArrayList<String>();
+    HashMap<String, List<String>> incidentListDataChild = new HashMap<String,List<String>>();
+    List<String> hazardsList = new ArrayList<String>();
+    List<String> respondersList = new ArrayList<String>();
+    List<String> bystandersList = new ArrayList<String>();
+    List<String> symptomsList = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -316,7 +320,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //expandable list view
                 expListView.setVisibility(View.VISIBLE);
-                final String[] data={"Vehicular accident at Middletown","Vehicles involved: Chemical truck, Car, Police vehicle","First responders: Middletown police department","Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver found","Police van driver exhibits edema"};
+                final String[] data={"Vehicular accident at Middletown","Vehicles involved: Chemical truck, Car, Police vehicle","First responders: Middletown police department","Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver exhibits edema"};
+                        //"Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver found","Police van driver exhibits edema"};
                 final Handler handler = new Handler();
 
                 handler.postDelayed(new Runnable() {
@@ -422,25 +427,52 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void prepareIncidentListData(String data) {
 
-        if(data.contains("Vehicular accident")){
-            incidentListDataHeader = new ArrayList<String>();
-            incidentListDataChild = new HashMap<String,List<String>>();
 
+
+        if(data.contains("Vehicular accident")){
             // Adding child data
             incidentListDataHeader.add("Hazards");
-
             // Adding child data
-            List<String> incidentListDetails = new ArrayList<String>();
-            incidentListDetails.add("Vehicular accident");
-            incidentListDataChild.put(incidentListDataHeader.get(0), incidentListDetails); // Header, Child data
-
-
-
+            hazardsList.add("Vehicular accident");
+            incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList); // Header, Child data
         }
-
-
-
-
+        if(data.contains("First responders")){
+            // Adding child data
+            incidentListDataHeader.add("Responders");
+            //Adding child data
+            respondersList.add("Middletown police Department");
+            incidentListDataChild.put(incidentListDataHeader.get(1), respondersList);
+        }
+        if(data.contains("Bystanders")){
+            // Adding child data
+            incidentListDataHeader.add("Bystanders");
+            bystandersList.add("Connor, Will");
+            bystandersList.add("Smith, Sam");
+            bystandersList.add("Taylor, Jessica");
+            bystandersList.add("Duber, Brandon");
+            incidentListDataChild.put(incidentListDataHeader.get(2), bystandersList);
+        }
+        if(data.contains("EMT")){
+            // Adding child data
+            respondersList.add("EMT");
+            incidentListDataChild.put(incidentListDataHeader.get(1), respondersList);
+        }
+        if(data.contains("Symptoms")){
+            // Adding child data
+            incidentListDataHeader.add("Symptoms");
+            symptomsList.add("Cuts");
+            symptomsList.add("Bruises");
+            symptomsList.add("Red skin");
+            symptomsList.add("Blisters");
+            symptomsList.add("Breathing difficulty");
+            symptomsList.add("Edema");
+            incidentListDataChild.put(incidentListDataHeader.get(3), symptomsList);
+        }
+        if(data.contains("Sodium")){
+            hazardsList.add("Sodium Borohydride");
+            hazardsList.add("Unknown Hazard");
+            incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList);
+        }
 
     }
 

@@ -58,10 +58,16 @@ public class ExpandableIncidentListAdapter extends BaseExpandableListAdapter {
         txtListChild.setText(childText);
         TextView txtListDateChild = (TextView) convertView
                 .findViewById(R.id.supportingDetails);
-        if(childText.contains("Vehicular accident")){
+
+        if(groupPosition==0&&childPosition==0){
             txtListDateChild.setText("Chemical truck, " +
                                         "Car, " +
                                         "Police Vehicle");
+        }else if(groupPosition==0&&childPosition==1){
+            txtListDateChild.setText("Chemical Hazard");
+        }
+        else{
+            txtListDateChild.setText(" ");
         }
 
         return convertView;
