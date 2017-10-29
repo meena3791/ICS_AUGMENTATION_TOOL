@@ -1,121 +1,157 @@
 package meenakshinagarajan.example.com.icsaugmentationtool;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Typeface;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListView;
+import android.widget.CompoundButton;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by meenakshinagarajan on 10/26/17.
  */
 
-public class ExpandableRiskAdapter extends BaseExpandableListAdapter {
+public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAdapter.ViewHolder> {
     private Context _context;
     private List<String> _listDataHeader; // header titles
     // child data in format of header title, child title
     private HashMap<String, List<String>> _listDataChild;
-
     public ExpandableRiskAdapter(Context context, List<String> listDataHeader,
-                                         HashMap<String, List<String>> listChildData) {
+                                 HashMap<String, List<String>> listChildData){
         this._context = context;
         this._listDataHeader = listDataHeader;
         this._listDataChild = listChildData;
+
+    }
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        // create a new view
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.risk_details_list_view, parent, false);
+
+        ViewHolder viewHolder = new ViewHolder(view);
+        return viewHolder;
+
+
     }
 
     @Override
-    public Object getChild(int groupPosition, int childPosititon) {
-        return this._listDataChild.get(this._listDataHeader.get(groupPosition))
-                .get(childPosititon);
+    public void onBindViewHolder(ViewHolder holder, int position) {
+
+        
+
+        Log.d("Hash map size", ((String.valueOf( _listDataChild.values().size()))));
+
+        for (Map.Entry<String, List<String>> entry : _listDataChild.entrySet()) {
+                String key = entry.getKey();
+                holder.textViewHeader.setText(key);
+                List<String> values = entry.getValue();
+                for(int i=0;i<values.size();i++){
+                    holder.row= new TableRow(this._context);
+                    TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+                    holder.row.setLayoutParams(lp);
+                    holder.textView = new TextView((this._context));
+                    holder.textView1 = new TextView(this._context);
+                    if(values.get(i).contains("can")){
+                        holder.textView.setText(values.get(i));
+                    }
+                    holder.textView1 = new TextView(this._context);
+                    holder.textView1.setText(values.get(i));
+                }
+
+            }
 
     }
 
+
     @Override
-    public long getChildId(int groupPosition, int childPosition) {
-        return childPosition;
+    public int getItemCount() {
+        //Log.d("Hash map size", (String.valueOf(_listDataChild.size()) ));
+        return _listDataChild.size();
+
     }
 
-    @Override
-    public View getChildView(int groupPosition, final int childPosition,
-                             boolean isLastChild, View convertView, ViewGroup parent) {
+    public static class ViewHolder extends RecyclerView.ViewHolder{
+        protected TextView textView;
+        protected TextView textView1;
+        protected TextView textViewHeader;
+        protected ToggleButton togglebutton;
+        protected CardView cardView;
+        protected TableLayout tableLayout;
+        protected TableRow row;
+        protected int minHeight;
+        public ViewHolder(View itemView) {
+            super(itemView);
+            textView =  (TextView) itemView.findViewById(R.id.risk_list_item1);
+            textView1 =  (TextView) itemView.findViewById(R.id.risk_list_item2);
+            textViewHeader =  (TextView) itemView.findViewById(R.id.risk_list_item_header);
+            cardView = (CardView)  itemView.findViewById(R.id.cardView);
+            togglebutton = (ToggleButton) itemView.findViewById(R.id.toggleButton);
+            tableLayout = (TableLayout)  itemView.findViewById(R.id.displayLinear);
+            row=(TableRow)itemView.findViewById(R.id.display_row);
+            minHeight = cardView.getMinimumHeight();
 
-        String headerTitle = (String) getGroup(groupPosition);
-       final String childText = (String) getChild(groupPosition, childPosition);
 
-        if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) this._context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = infalInflater.inflate(R.layout.risk_details_list_view, null);
+            togglebutton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if (b) {
+                        collapseView();
+                    }else{
+                        expandView(220);
+                    }
+                }
+            });
+
+
         }
 
-        TextView txtListChild = (TextView) convertView
-                .findViewById(R.id.textView_name);
-        txtListChild.setText(headerTitle);
-        TextView txtListDateChild = (TextView) convertView
-                .findViewById(R.id.textView_Owner);
-        TextView txtListDataChild = (TextView) convertView
-                .findViewById(R.id.textView_OwnerUrl);
+        public void expandView(int height) {
 
-            txtListDateChild.setText(childText);
-        txtListDataChild.setText(childText);
+            ValueAnimator anim = ValueAnimator.ofInt(cardView.getMeasuredHeightAndState(),
+                    height);
+            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    int val = (Integer) valueAnimator.getAnimatedValue();
+                    ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();
+                    layoutParams.height = val;
+                    cardView.setLayoutParams(layoutParams);
+                }
+            });
+            anim.start();
 
-        return convertView;
-    }
-
-    @Override
-    public int getChildrenCount(int groupPosition) {
-        return this._listDataChild.get(this._listDataHeader.get(groupPosition))
-                .size();
-    }
-
-    @Override
-    public Object getGroup(int groupPosition) {
-        return this._listDataHeader.get(groupPosition);
-    }
-
-    @Override
-    public int getGroupCount() {
-        return this._listDataHeader.size();
-    }
-
-    @Override
-    public long getGroupId(int groupPosition) {
-        return groupPosition;
-    }
-
-    @Override
-    public View getGroupView(int groupPosition, boolean isExpanded,
-                             View convertView, ViewGroup parent) {
-       String headerTitle = (String) getGroup(groupPosition);
-        if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) this._context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = infalInflater.inflate(R.layout.risk_details_list_group, null);
         }
+        public void collapseView() {
 
-        TextView lblListHeader = (TextView) convertView
-                .findViewById(R.id.lblRiskListHeader);
-        lblListHeader.setTypeface(null, Typeface.BOLD);
-        lblListHeader.setText(headerTitle);
-        ExpandableListView mExpandableListView = (ExpandableListView) parent;
-        mExpandableListView.expandGroup(groupPosition);
-        return convertView;
+            ValueAnimator anim = ValueAnimator.ofInt(cardView.getMeasuredHeightAndState(),
+                    minHeight);
+            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    int val = (Integer) valueAnimator.getAnimatedValue();
+                    ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();
+                    layoutParams.height = val;
+                    cardView.setLayoutParams(layoutParams);
 
+                }
+            });
+            anim.start();
+        }
     }
 
-    @Override
-    public boolean hasStableIds() {
-        return false;
-    }
 
-    @Override
-    public boolean isChildSelectable(int groupPosition, int childPosition) {
-        return true;
-    }
+
 }

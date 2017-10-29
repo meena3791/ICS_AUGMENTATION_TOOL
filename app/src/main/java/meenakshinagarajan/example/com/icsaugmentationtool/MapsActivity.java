@@ -13,6 +13,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -56,7 +58,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int PROXIMITY_RADIUS = 10000;
     ExpandableListAdapter listAdapter;
     ExpandableIncidentListAdapter incidentListAdapter;
-    ExpandableRiskAdapter riskListAdapter;
+    //ExpandableRiskAdapter riskListAdapter;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
     LatLng incidentLocation = new LatLng(incidentLatitude, incidentLongitude);
@@ -75,6 +77,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<String> riskUpdates = new ArrayList<String>();
     List<String> riskDataHeader = new ArrayList<String>();
     HashMap<String, List<String>> riskDataChild = new HashMap<String, List<String>>();
+    //private RecyclerView riskDetailsListView;
+    private RecyclerView.Adapter riskListAdapter;
+    private RecyclerView.LayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +153,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final ToggleButton trafficButton = (ToggleButton) findViewById(R.id.trafficButton);
         final ExpandableListView expListView = (ExpandableListView) findViewById(R.id.expandableListView);
         final ExpandableListView incidentDetailsListView = (ExpandableListView) findViewById(R.id.incidentDetailsListView);
-        final ExpandableListView riskDetailsListView = (ExpandableListView) findViewById(R.id.riskDetailsListView);
+        final RecyclerView riskDetailsListView = (RecyclerView) findViewById(R.id.riskDetailsListView);
+
+        riskDetailsListView.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(this);
+        riskDetailsListView.setLayoutManager(layoutManager);
 
 
         //alertbox after 5 seconds
@@ -326,6 +335,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             prepareIncidentListData(data[i]);
                             incidentListAdapter = new ExpandableIncidentListAdapter(MapsActivity.this, incidentListDataHeader, incidentListDataChild);
                             incidentDetailsListView.setAdapter(incidentListAdapter);
+                            prepareRiskData(data[i]);
+                            riskListAdapter = new ExpandableRiskAdapter(MapsActivity.this, riskDataHeader, riskDataChild);
+                            riskDetailsListView.setAdapter(riskListAdapter);
 
                         }else{
 
@@ -341,11 +353,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
                 }, 1000);
-
-               /* prepareRiskData("Vehicular Accident Exposure");
-                riskListAdapter = new ExpandableRiskAdapter(MapsActivity.this, riskDataHeader, riskDataChild);
-                riskDetailsListView.setAdapter(riskListAdapter);*/
-
 
 
 
@@ -408,16 +415,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void prepareRiskData(String data) {
 
-        // Adding child data
-        riskDataHeader.add(data);
+        if(data.contains("Vehicular accident")){
+            // Adding child data
+            riskDataHeader.add("Vehicular Accident Exposure");
 
-        // Adding child data
-        riskUpdates.add("can cause");
-        riskUpdates.add("cuts");
+            // Adding child data
+            riskUpdates.add("canCause");
+            riskUpdates.add("Cut");
+            riskUpdates.add("Break");
+            riskUpdates.add("Bruise");
+            riskUpdates.add("Unconsciousness");
+            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));// Header, Child data
 
-        riskUpdates.add(0,data);
-        riskDataChild.put(riskDataHeader.get(0),(riskUpdates));// Header, Child data
-        //oldUpdates.add(data1);
+        }
+
+
     }
 
     private void prepareIncidentListData(String data) {
