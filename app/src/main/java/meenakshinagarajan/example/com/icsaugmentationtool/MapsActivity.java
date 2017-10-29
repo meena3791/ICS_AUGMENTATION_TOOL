@@ -417,7 +417,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if(data.contains("Vehicular accident")){
             // Adding child data
-            riskDataHeader.add("Vehicular Accident Exposure");
+            riskDataHeader.add("Vehicular Accident");
 
             // Adding child data
             riskUpdates.add("canCause");

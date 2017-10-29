@@ -22,17 +22,27 @@
         android:textColor="@color/colorText"
         android:textAppearance="?android:attr/textAppearanceLarge"
         />
-  <!--  <LinearLayout
+
+    <ToggleButton
+        android:id="@+id/toggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/scroll"
+        android:layout_alignParentEnd="true"
+        android:textOn="+"
+        android:textOff="-"/>
+
+    <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/risk_list_item_header"
-        android:id="@+id/linearLayout">-->
+        android:layout_below="@+id/risk_list_item_header">
     <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/displayLinear"
-        android:layout_below="@+id/risk_list_item_header"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:visibility="visible">
 
     <TableRow
             android:layout_width="wrap_content"
@@ -42,37 +52,21 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:id="@+id/risk_list_item1"
+            android:textColor="@color/colorPrimary"
             android:textAppearance="?android:attr/textAppearanceMedium"
             />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/risk_list_item2"
+            android:textColor="@color/colorPrimary"
             android:textAppearance="?android:attr/textAppearanceMedium"
             /></TableRow>
     </TableLayout>
-       <!-- <TextView
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/risk_list_item1"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/risk_list_item2"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />-->
-   <!-- </LinearLayout>-->
 
-    <ToggleButton
-        android:id="@+id/toggleButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/displayLinear"
-        android:layout_alignParentEnd="true"
-        android:textOn="+"
-        android:textOff="-"/>
+    </ScrollView>
+
+
 </RelativeLayout>
 
 
