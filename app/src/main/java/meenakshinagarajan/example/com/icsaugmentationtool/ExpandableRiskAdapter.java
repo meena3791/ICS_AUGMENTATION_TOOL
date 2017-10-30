@@ -2,6 +2,7 @@ package meenakshinagarajan.example.com.icsaugmentationtool;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,7 +17,6 @@ import android.widget.ToggleButton;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by meenakshinagarajan on 10/26/17.
@@ -31,7 +31,9 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                                  HashMap<String, List<String>> listChildData){
         this._context = context;
         this._listDataHeader = listDataHeader;
+        Log.d("listDataHeader",listDataHeader.toString());
         this._listDataChild = listChildData;
+        Log.d("listDataChild",listChildData.toString());
 
     }
     @Override
@@ -41,7 +43,7 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                 .inflate(R.layout.risk_details_list_view, parent, false);
 
         ViewHolder viewHolder = new ViewHolder(view);
-        return viewHolder;
+        return  viewHolder;
 
 
     }
@@ -50,41 +52,53 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
     public void onBindViewHolder(ViewHolder holder, int position) {
         Log.d("Hash map size", ((String.valueOf( _listDataChild.values().size()))));
         Log.d("Hash map values",_listDataChild.values().toString());
-        for (Map.Entry<String, List<String>> entry : _listDataChild.entrySet()) {
-            String key = entry.getKey();
-            holder.textViewHeader.setText(key);
-            List<String> values = entry.getValue();
-            for(int i=0;i<values.size();i++){
+        Log.d("Header values",_listDataHeader.toString());
+
+        if(position==0){
+            String key = _listDataHeader.get(0);
+            if(key.contains("Vehicular Accident")){
+                List<String> values = (List<String>) _listDataChild.get(key);
                 TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
                 holder.row.setLayoutParams(lp);
-                holder.row= new TableRow(holder.itemView.getContext());
-                //TextView textView =  (TextView) holder.row.findViewById(R.id.risk_list_item1);
-                //TextView textView1 =  (TextView) holder.row.findViewById(R.id.risk_list_item2);
-                holder.textView = new TextView(holder.itemView.getContext());
-                holder.textView1 = new TextView(holder.itemView.getContext());
+                for(int i=0;i<values.size();i++){
+                    Log.d("values",values.get(i));
+                    holder.row= new TableRow(holder.itemView.getContext());
+                    holder.textView = new TextView(holder.itemView.getContext());
+                    holder.textView1 = new TextView(holder.itemView.getContext());
+                    holder.textViewHeader.setText(key);
                     if(values.get(i).contains("can")){
-                        Log.d("Values",values.get(i));
+                        holder.textViewHeader.setText(key);
+                        holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
+                        holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.textView.setText(values.get(i));
                         holder.textView1.setText("Symptoms");
+                    }else if(values.get(i).contains("mitigatedBy")){
+                        holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
+                        holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
+                        holder.textView.setText(values.get(i));
+                        holder.textView1.setText("Protection Equipment");
                     }else{
+                        holder.textView.setTypeface(Typeface.DEFAULT);
+                        holder.textView1.setTypeface(Typeface.DEFAULT);
                         holder.textView.setText(" ");
                         holder.textView1.setText(values.get(i));
                     }
                     holder.tableLayout.addView(holder.row);
                     holder.row.addView(holder.textView);
                     holder.row.addView(holder.textView1);
-
-
                 }
 
             }
 
+        }
+
     }
+
 
 
     @Override
     public int getItemCount() {
-        //Log.d("Hash map size", (String.valueOf(_listDataChild.size()) ));
+        Log.d("Hash map size", (String.valueOf(_listDataChild.size()) ));
         return _listDataChild.size();
 
     }
@@ -92,11 +106,13 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
     public static class ViewHolder extends RecyclerView.ViewHolder{
         protected TextView textView;
         protected TextView textView1;
+        //protected TextView textView2;
         protected TextView textViewHeader;
         protected ToggleButton togglebutton;
         protected CardView cardView;
         protected TableLayout tableLayout;
         protected TableRow row;
+        //protected ScrollView scroll;
         protected int minHeight;
         public ViewHolder(View itemView) {
             super(itemView);
@@ -106,10 +122,9 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
             togglebutton = (ToggleButton) itemView.findViewById(R.id.toggleButton);
             tableLayout = (TableLayout)  itemView.findViewById(R.id.displayLinear);
             row=(TableRow)itemView.findViewById(R.id.display_row);
-            TextView textView =  (TextView) row.findViewById(R.id.risk_list_item1);
-            TextView textView1 =  (TextView) row.findViewById(R.id.risk_list_item2);
-
             minHeight = cardView.getMinimumHeight();
+            TextView textView = (TextView) itemView.findViewById(R.id.risk_list_item1);
+            TextView textView1 = (TextView) itemView.findViewById(R.id.risk_list_item2);
 
 
             togglebutton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
@@ -119,7 +134,7 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                     if (b) {
                         collapseView();
                     }else{
-                        expandView(240);
+                        expandView((CardView.LayoutParams.WRAP_CONTENT));
                     }
                 }
             });

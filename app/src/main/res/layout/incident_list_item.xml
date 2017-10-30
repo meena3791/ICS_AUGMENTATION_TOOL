@@ -7,11 +7,10 @@
     <TextView
         android:id="@+id/lblIncidentListItem"
         android:layout_width="350dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:textSize="20sp"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
-        android:textColor="@color/colorPrimary"
         android:clickable="true"
         android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft" />
 
@@ -20,10 +19,9 @@
         android:layout_width="match_parent"
         android:layout_toEndOf="@+id/lblIncidentListItem"
         android:layout_height="wrap_content"
-        android:textSize="17sp"
+        android:textSize="12sp"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
-        android:textColor="@color/colorPrimary"
         android:textStyle="italic"
         android:clickable="true"
         />

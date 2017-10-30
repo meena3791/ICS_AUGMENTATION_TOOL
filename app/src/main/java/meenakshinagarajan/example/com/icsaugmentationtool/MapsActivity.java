@@ -74,8 +74,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<String> respondersList = new ArrayList<String>();
     List<String> bystandersList = new ArrayList<String>();
     List<String> symptomsList = new ArrayList<String>();
-    List<String> riskUpdates = new ArrayList<String>();
     List<String> riskDataHeader = new ArrayList<String>();
+    List<String> riskUpdates = new ArrayList<String>();
+    List<String> riskUpdates1 = new ArrayList<String>();
     HashMap<String, List<String>> riskDataChild = new HashMap<String, List<String>>();
     //private RecyclerView riskDetailsListView;
     private RecyclerView.Adapter riskListAdapter;
@@ -154,6 +155,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final ExpandableListView expListView = (ExpandableListView) findViewById(R.id.expandableListView);
         final ExpandableListView incidentDetailsListView = (ExpandableListView) findViewById(R.id.incidentDetailsListView);
         final RecyclerView riskDetailsListView = (RecyclerView) findViewById(R.id.riskDetailsListView);
+        final RelativeLayout rl = (RelativeLayout) findViewById(R.id.relativeLayout);
 
         riskDetailsListView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
@@ -215,7 +217,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         switch (tab.getPosition()){
                             case 0:
                                 incidentDetailsListView.setVisibility(View.VISIBLE);
-                                riskDetailsListView.setVisibility(View.INVISIBLE);
+                                rl.setVisibility(View.INVISIBLE);
                             case 1:
                         }
 
@@ -225,7 +227,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         switch (tab.getPosition()){
                             case 0:
                                 incidentDetailsListView.setVisibility(View.INVISIBLE);
-                                riskDetailsListView.setVisibility(View.VISIBLE);
+                                rl.setVisibility(View.VISIBLE);
                             case 1:
                         }
                     }
@@ -419,12 +421,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Adding child data
             riskDataHeader.add("Vehicular Accident");
 
+
             // Adding child data
             riskUpdates.add("canCause");
             riskUpdates.add("Cut");
             riskUpdates.add("Break");
             riskUpdates.add("Bruise");
             riskUpdates.add("Unconsciousness");
+            riskUpdates.add("mitigatedBy");
+            riskUpdates.add("Seat Belt");
+            riskUpdates.add("Air Bag");
+
             riskDataChild.put(riskDataHeader.get(0),(riskUpdates));// Header, Child data
 
         }
@@ -438,7 +445,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Adding child data
             incidentListDataHeader.add("Hazards");
             // Adding child data
-            hazardsList.add("Vehicular accident");
+            hazardsList.add("Vehicular Accident");
             incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList); // Header, Child data
         }
         if(data.contains("First responders")){
