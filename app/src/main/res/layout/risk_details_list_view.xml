@@ -62,7 +62,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     />
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/risk_list_item2"
                     android:textColor="@color/colorPrimary"

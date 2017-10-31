@@ -1,0 +1,18 @@
+{
+  "Vehicular Accident":
+  {
+    "relation":"canCause",
+    "value":"Symptoms"
+  },
+
+  "Vehicular Accident Exposure":[
+    {
+      "relation":"mitigatedBy",
+      "value":"Seat belt"
+    },
+    {
+      "relation":"mitigatedBy",
+      "value":"Air bag"
+    }
+  ]
+}
