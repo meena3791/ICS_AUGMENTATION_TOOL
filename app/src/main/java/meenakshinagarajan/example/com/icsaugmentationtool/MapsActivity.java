@@ -161,6 +161,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         riskDetailsListView.setLayoutManager(layoutManager);
 
 
+
         //alertbox after 5 seconds
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -319,7 +320,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //expandable list view
                 expListView.setVisibility(View.VISIBLE);
-                final String[] data={"Vehicular accident at Middletown","Vehicles involved: Chemical truck, Car, Police vehicle","First responders: Middletown police department","Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Bystanders exhibits symptoms: mild scaling, red hands","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver exhibits edema"};
+                expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener(){
+
+                    @Override
+                    public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long id) {
+
+                        TextView childText = (TextView) view.findViewById(R.id.lblListItem);
+                        String data = (String) childText.getText();
+                        prepareRiskData(data);
+                        riskListAdapter = new ExpandableRiskAdapter(MapsActivity.this, riskDataHeader, riskDataChild);
+                        riskDetailsListView.setAdapter(riskListAdapter);
+
+                        return false;
+                    }
+                });
+                final String[] data={"Vehicular accident at Middletown","Vehicles involved: Chemical truck, Car, Police vehicle","First responders: Middletown police department","Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Bystanders exhibits mild scaling, red hands","Sodium borohydride presence detected","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Police van driver exhibits edema"};
                         //"Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver found","Police van driver exhibits edema"};
                 final Handler handler = new Handler();
 
@@ -423,6 +438,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             List<String> riskUpdates = new ArrayList<String>();
             // Adding child data
+            riskUpdates.add("type");
             riskUpdates.add("canCause");
             riskUpdates.add("Cut");
             riskUpdates.add("Break");
@@ -445,8 +461,47 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             List<String> riskUpdates = new ArrayList<String>();
             List<String> riskUpdates1 = new ArrayList<String>();
             List<String> riskUpdates2 = new ArrayList<String>();
+            List<String> riskUpdates3 = new ArrayList<String>();
             riskUpdates.add("canCarry");
             riskUpdates1.add("canCause");
+            riskUpdates2.add("canCause");
+            riskUpdates2.add("Itching");
+            riskUpdates2.add("Blindness");
+            riskUpdates2.add("Blistering");
+            riskUpdates2.add("Scaling");
+            riskUpdates2.add("Redness");
+            riskUpdates2.add("Corneal Damage");
+            riskUpdates2.add("Coughing");
+            riskUpdates2.add("Sneezing");
+            riskUpdates2.add("mitigatedBy");
+            riskUpdates2.add("Full suit");
+            riskUpdates2.add("Gloves");
+            riskUpdates2.add("Boots");
+            riskUpdates2.add("Self contained breathing apparatus");
+            riskUpdates2.add("Splash goggles");
+            riskDataChild = new HashMap<String, List<String>>();
+            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
+            riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
+            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));// Header, Child data
+
+        }
+        if(data.contains("First responders")){
+            riskDataHeader = new ArrayList<String>();
+            riskDataHeader.add("First Responders");
+            riskDataHeader.add("Vehicular Accident");
+            riskDataHeader.add("Chemical Hazard");
+            List<String> riskUpdates = new ArrayList<String>();
+            List<String> riskUpdates1 = new ArrayList<String>();
+            List<String> riskUpdates2 = new ArrayList<String>();
+            riskUpdates.add("type");
+            riskUpdates.add("are susceptibleTo");
+            riskUpdates.add("Vehicular Accident");
+            riskUpdates.add("Chemical Hazard");
+            riskUpdates1.add("canCause");
+            riskUpdates1.add("Cut");
+            riskUpdates1.add("Break");
+            riskUpdates1.add("Bruise");
+            riskUpdates1.add("Unconsciousness");
             riskUpdates2.add("canCause");
             riskUpdates2.add("Itching");
             riskUpdates2.add("Blindness");
@@ -459,37 +514,119 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             riskDataChild = new HashMap<String, List<String>>();
             riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
             riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
-            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));// Header, Child data
+            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));
 
         }
-      if(data.contains("First responders")){
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("First Responders");
-            List<String> riskUpdates = new ArrayList<String>();
-            riskUpdates.add("are susceptibleTo");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
-
-        }
-        if(data.contains("Bystanders")){
+       if(data.contains("Bystanders")){
             riskDataHeader = new ArrayList<String>();
             riskDataHeader.add("Bystanders");
+            riskDataHeader.add("Vehicular Accident");
+            riskDataHeader.add("Chemical Hazard");
             List<String> riskUpdates = new ArrayList<String>();
+            List<String> riskUpdates1 = new ArrayList<String>();
+            List<String> riskUpdates2 = new ArrayList<String>();
+            riskUpdates.add("type");
             riskUpdates.add("are susceptibleTo");
+            riskUpdates.add("Vehicular Accident");
+            riskUpdates.add("Chemical Hazard");
+            riskUpdates1.add("canCause");
+            riskUpdates1.add("Cut");
+            riskUpdates1.add("Break");
+            riskUpdates1.add("Bruise");
+            riskUpdates1.add("Unconsciousness");
+            riskUpdates2.add("canCause");
+            riskUpdates2.add("Itching");
+            riskUpdates2.add("Blindness");
+            riskUpdates2.add("Blistering");
+            riskUpdates2.add("Scaling");
+            riskUpdates2.add("Redness");
+            riskUpdates2.add("Corneal Damage");
+            riskUpdates2.add("Coughing");
+            riskUpdates2.add("Sneezing");
             riskDataChild = new HashMap<String, List<String>>();
             riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
-
+            riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
+            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));
         }
-       /* if(data.contains("EMT")){
+       if(data.contains("EMT")){
             riskDataHeader = new ArrayList<String>();
             riskDataHeader.add("EMT Response Team");
             List<String> riskUpdates = new ArrayList<String>();
             riskUpdates.add("canTreat");
+            riskUpdates.add("Cut");
+            riskUpdates.add("Break");
+            riskUpdates.add("Bruise");
+            riskUpdates.add("Unconsciousness");
+            riskUpdates.add("Itching");
+            riskUpdates.add("Blindness");
+            riskUpdates.add("Blistering");
+            riskUpdates.add("Scaling");
+            riskUpdates.add("Redness");
+            riskUpdates.add("Corneal Damage");
+            riskUpdates.add("Coughing");
+            riskUpdates.add("Sneezing");
+            riskUpdates.add("type");
             riskUpdates.add("are susceptibleTo");
             riskDataChild = new HashMap<String, List<String>>();
             riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
 
-        }*/
+        }
+        if(data.contains("Bystanders")&&data.contains("exhibits")){
+            riskDataHeader = new ArrayList<String>();
+            riskDataHeader.add("Bystanders");
+            riskDataHeader.add("Vehicular Accident");
+            riskDataHeader.add("Chemical Hazard");
+            List<String> riskUpdates = new ArrayList<String>();
+            List<String> riskUpdates1 = new ArrayList<String>();
+            List<String> riskUpdates2 = new ArrayList<String>();
+            riskUpdates.add("type");
+            riskUpdates.add("are susceptibleTo");
+            riskUpdates.add("Vehicular Accident");
+            riskUpdates.add("Chemical Hazard");
+            riskUpdates.add("exhibits");
+            riskUpdates.add("Scaling");
+            riskUpdates.add("Redness");
+            riskUpdates1.add("canCause");
+            riskUpdates1.add("Cut");
+            riskUpdates1.add("Break");
+            riskUpdates1.add("Bruise");
+            riskUpdates1.add("Unconsciousness");
+            riskUpdates2.add("canCause");
+            riskUpdates2.add("Itching");
+            riskUpdates2.add("Blindness");
+            riskUpdates2.add("Blistering");
+            riskUpdates2.add("Scaling");
+            riskUpdates2.add("Redness");
+            riskUpdates2.add("Corneal Damage");
+            riskUpdates2.add("Coughing");
+            riskUpdates2.add("Sneezing");
+            riskDataChild = new HashMap<String, List<String>>();
+            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
+            riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
+            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));
+        }
+        if(data.contains("Sodium borohydride")){
+            // Adding child data
+            riskDataHeader = new ArrayList<String>();
+            riskDataHeader.add("Sodium Borohydride");
+            List<String> riskUpdates = new ArrayList<String>();
+            // Adding child data
+            riskUpdates.add("type");
+            riskUpdates.add("hasPhysicalDescription");
+            riskUpdates.add("hasFormula");
+            riskUpdates.add("hasSynonym");
+            riskUpdates.add("canCause");
+            riskUpdates.add("Cut");
+            riskUpdates.add("Break");
+            riskUpdates.add("Bruise");
+            riskUpdates.add("Unconsciousness");
+            riskUpdates.add("mitigatedBy");
+            riskUpdates.add("Seat Belt");
+            riskUpdates.add("Air Bag");
+            riskDataChild = new HashMap<String, List<String>>();
+            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));// Header, Child data
+
+        }
 
 
     }

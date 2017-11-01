@@ -1,7 +1,7 @@
 <android.support.v7.widget.CardView
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_gravity="center"
+    android:layout_gravity="center_vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     card_view:cardCornerRadius="4dp"
@@ -12,8 +12,9 @@
     >
 <RelativeLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/rl">
+    android:layout_height="wrap_content"
+    android:id="@+id/rl"
+    >
     <TextView
         android:layout_width="match_parent"
         android:layout_height="40dp"
@@ -22,7 +23,6 @@
         android:textColor="@color/colorText"
         android:textAppearance="?android:attr/textAppearanceLarge"
         />
-
     <ToggleButton
         android:id="@+id/toggleButton"
         android:layout_width="wrap_content"
@@ -32,8 +32,8 @@
         android:textColor="@color/colorText"
         android:textOn="+"
         android:textOff="-"
-        android:background="@android:color/transparent"/>
-
+        android:background="@android:color/transparent"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
    <!-- <ScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
@@ -41,44 +41,54 @@
         android:layout_below="@+id/risk_list_item_header">-->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_below="@+id/risk_list_item_header"
         android:id="@+id/ll">
 
         <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/displayLinear">
+            android:orientation="horizontal"
+            android:id="@+id/displayLinear"
+            android:shrinkColumns="*">
 
             <TableRow
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/display_row">
+                android:id="@+id/display_row"
+                android:weightSum="2">
                 <TextView
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/risk_list_item1"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
                     android:textColor="@color/colorPrimary"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     />
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="400dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/risk_list_item2"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
                     android:textColor="@color/colorPrimary"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     />
+
                </TableRow>
+
         </TableLayout>
 
 
     </LinearLayout>
 
-
+</RelativeLayout>
 <!--    </ScrollView>-->
 
 
-</RelativeLayout>
+
 
 
 
