@@ -61,8 +61,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             "http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric";
     private RelativeLayout mMapView;
     List<Address> address = null;
-    private double yourLatitude = 39.7845;
-    private double yourLongitude = -84.0580;
+    private double yourLatitude = 39.784450;
+    private double yourLongitude = -84.057906;
     private double incidentLatitude = 39.5338;
     private double incidentLongitude = -84.3714;
     private double victim1Latitude = 39.5340;
@@ -141,6 +141,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Add a marker in Sydney and move the camera
         //Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         address = getAddress(yourLatitude, yourLongitude);
+        Log.d("address:",address.toString());
         Marker currentLocationMarker = mMap.addMarker(new MarkerOptions().position(yourLocation).title("You are here:" + address.get(0).getAddressLine(0)));
         myMarkers.add(currentLocationMarker);
         //Location enabled true
@@ -184,7 +185,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final RecyclerView riskDetailsListView = (RecyclerView) findViewById(R.id.riskDetailsListView);
         final RelativeLayout rl = (RelativeLayout) findViewById(R.id.relativeLayout);
         TextView weatherIcon = (TextView) findViewById(R.id.weather_icon);
-        Typeface weatherFont=Typeface.createFromAsset(this.getAssets(), "/fonts/weathericons-regular-webfont.ttf");
+        Typeface weatherFont=Typeface.createFromAsset(this.getAssets(), "fonts/weathericons-regular-webfont.ttf");
         weatherIcon.setTypeface(weatherFont);
 
         riskDetailsListView.setHasFixedSize(true);
