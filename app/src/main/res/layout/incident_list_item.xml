@@ -6,24 +6,23 @@
 
     <TextView
         android:id="@+id/lblIncidentListItem"
-        android:layout_width="350dp"
+        android:layout_width="300dp"
         android:layout_height="50dp"
         android:textSize="20sp"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
-        android:clickable="true"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft" />
+        android:paddingLeft="2dp"
+        android:clickable="true"/>
 
     <TextView
         android:id="@+id/supportingDetails"
         android:layout_width="match_parent"
         android:layout_toEndOf="@+id/lblIncidentListItem"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
-        android:textStyle="italic"
-        android:clickable="true"
+        android:paddingEnd="2dp"
         />
 
 </RelativeLayout>

@@ -20,8 +20,18 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="800dp"
         android:layout_marginTop="20dp"
-        android:text="19 DEG C"
+        android:text="10°C"
         android:textColor="@color/colorText"/>
+    <TextView
+        android:id="@+id/weather_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/textView4"
+        android:textColor="@color/colorText"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_marginTop="20dp"
+        android:text="@string/weather_rainy"
+        />
 
     <!--Map View-->
     <RelativeLayout

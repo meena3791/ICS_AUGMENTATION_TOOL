@@ -59,16 +59,22 @@ public class ExpandableIncidentListAdapter extends BaseExpandableListAdapter {
         TextView txtListDateChild = (TextView) convertView
                 .findViewById(R.id.supportingDetails);
 
-       /* if(groupPosition==0&&childPosition==0){
+       if(groupPosition==0&&childPosition==0){
             txtListDateChild.setText("Chemical truck, " +
                                         "Car, " +
                                         "Police Vehicle");
         }else if(groupPosition==0&&childPosition==1){
             txtListDateChild.setText("Chemical Hazard");
+        }else if(groupPosition==1&&childPosition==0){
+           txtListDateChild.setText("Truck Driver");
+        }else if(groupPosition==1&&childPosition==1){
+           txtListDateChild.setText("Car Driver");
+        }else if(groupPosition==1&&childPosition==2){
+           txtListDateChild.setText("Car Passenger");
         }
         else{
             txtListDateChild.setText(" ");
-        }*/
+        }
 
         return convertView;
     }

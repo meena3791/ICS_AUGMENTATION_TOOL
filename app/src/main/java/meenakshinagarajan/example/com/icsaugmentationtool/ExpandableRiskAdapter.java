@@ -149,7 +149,7 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                     holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
                     holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
                     holder.textView.setText(values.get(i));
-                    if (key.contains("Chemical Hazard")) {
+                    if (key.contains("Chemical Hazard") || key.contains("Sodium Borohydride")) {
                         holder.textView1.setText("Symptoms");
                     }if (key.contains("Chemicals")) {
                         holder.textView1.setText("Hazard");
@@ -191,6 +191,8 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                         holder.textView1.setText("Symptoms");
                     }else if(key=="Chemical Hazard"){
                         holder.textView1.setText("Symptoms");
+                    }else if(key.contains("EMT")){
+                        holder.textView1.setText("Symptoms");
                     }
                 }  else if (values.get(i).contains("mitigatedBy")) {
                     holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
@@ -211,6 +213,100 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
             //}
 
         }
+        if (position == 3) {
+            String key = _listDataHeader.get(3);
+            // if (key.contains("Vehicular Accident")) {
+            List<String> values = (List<String>) _listDataChild.get(key);
+            TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+            holder.row.setLayoutParams(lp);
+            for (int i = 0; i < values.size(); i++) {
+                Log.d("values", values.get(i));
+                holder.row = new TableRow(holder.itemView.getContext());
+                holder.textView = new TextView(holder.itemView.getContext());
+                holder.textView1 = new TextView(holder.itemView.getContext());
+                holder.textViewHeader.setText(key);
+                if (values.get(i).contains("can")) {
+                    holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView.setText(values.get(i));
+                    if(key=="Vehicular Accident"){
+                        holder.textView1.setText("Symptoms");
+                    }else if(key=="Chemical Hazard"){
+                        holder.textView1.setText("Symptoms");
+                    }else if(key.contains("EMT")){
+                        holder.textView1.setText("Symptoms");
+                    }
+                }  else if (values.get(i).contains("mitigatedBy")) {
+                    holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView.setText(values.get(i));
+                    holder.textView1.setText("Protection Equipment");
+                } else if (values.get(i).contains("exhibits")) {
+                    holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView.setText(values.get(i));
+                    holder.textView1.setText("Symptoms");
+                }else {
+                    holder.textView.setTypeface(Typeface.DEFAULT);
+                    holder.textView1.setTypeface(Typeface.DEFAULT);
+                    holder.textView.setText(" ");
+                    holder.textView1.setText(values.get(i));
+                }
+                holder.tableLayout.addView(holder.row);
+                holder.row.addView(holder.textView);
+                holder.row.addView(holder.textView1);
+            }
+
+            //}
+
+        }  if (position == 4) {
+            String key = _listDataHeader.get(4);
+            // if (key.contains("Vehicular Accident")) {
+            List<String> values = (List<String>) _listDataChild.get(key);
+            TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+            holder.row.setLayoutParams(lp);
+            for (int i = 0; i < values.size(); i++) {
+                Log.d("values", values.get(i));
+                holder.row = new TableRow(holder.itemView.getContext());
+                holder.textView = new TextView(holder.itemView.getContext());
+                holder.textView1 = new TextView(holder.itemView.getContext());
+                holder.textViewHeader.setText(key);
+                if (values.get(i).contains("can")) {
+                    holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView.setText(values.get(i));
+                    if(key=="Vehicular Accident"){
+                        holder.textView1.setText("Symptoms");
+                    }else if(key=="Chemical Hazard"){
+                        holder.textView1.setText("Symptoms");
+                    }else if(key.contains("EMT")){
+                        holder.textView1.setText("Symptoms");
+                    }
+                }  else if (values.get(i).contains("mitigatedBy")) {
+                    holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView.setText(values.get(i));
+                    holder.textView1.setText("Protection Equipment");
+                } else if (values.get(i).contains("exhibits")) {
+                    holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
+                    holder.textView.setText(values.get(i));
+                    holder.textView1.setText("Symptoms");
+                }else {
+                    holder.textView.setTypeface(Typeface.DEFAULT);
+                    holder.textView1.setTypeface(Typeface.DEFAULT);
+                    holder.textView.setText(" ");
+                    holder.textView1.setText(values.get(i));
+                }
+                holder.tableLayout.addView(holder.row);
+                holder.row.addView(holder.textView);
+                holder.row.addView(holder.textView1);
+            }
+
+            //}
+
+        }
+
 
     }
 
