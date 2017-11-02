@@ -32,6 +32,17 @@
         android:layout_marginTop="20dp"
         android:text="@string/weather_rainy"
         />
+    <TextView
+        android:id="@+id/weather_icon1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="880dp"
+        android:textColor="@color/colorText"
+        android:textSize="35sp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_marginTop="10dp"
+        android:text="@string/wind_towards_23_deg"
+        />
 
     <!--Map View-->
     <RelativeLayout

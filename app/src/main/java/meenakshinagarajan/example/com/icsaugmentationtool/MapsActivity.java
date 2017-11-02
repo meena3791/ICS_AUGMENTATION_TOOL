@@ -185,8 +185,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final RecyclerView riskDetailsListView = (RecyclerView) findViewById(R.id.riskDetailsListView);
         final RelativeLayout rl = (RelativeLayout) findViewById(R.id.relativeLayout);
         TextView weatherIcon = (TextView) findViewById(R.id.weather_icon);
+        TextView weatherIcon1 = (TextView) findViewById(R.id.weather_icon1);
         Typeface weatherFont=Typeface.createFromAsset(this.getAssets(), "fonts/weathericons-regular-webfont.ttf");
         weatherIcon.setTypeface(weatherFont);
+        weatherIcon1.setTypeface(weatherFont);
 
         riskDetailsListView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
@@ -242,8 +244,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 tabLayout.setVisibility(View.VISIBLE);
                 tabLayout.addTab(tabLayout.newTab().setText("Incident Details"));
                 tabLayout.addTab(tabLayout.newTab().setText("Predicted Risks"));
-                //TabLayout.Tab tab=tabLayout.getTabAt(0);
-                //tab.select();
+                TabLayout.Tab tab=tabLayout.getTabAt(0);
+                tab.select();
                 tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager) {
                     @Override
                     public void onTabSelected(TabLayout.Tab tab) {
@@ -427,7 +429,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             float victim2distance=getDistance(victim2Latitude,victim2Longitude);
                             float distanceInFeet = (float) round((victim2distance*3.2808));
                             Marker victim2LocationMarker=mMap.addMarker(new MarkerOptions().position(victim2Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Cut,Redness,Edema,Wheezing,Blistering,Unconsciousness"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim1Location));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim2Location));
                             mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
                             victim2LocationMarker.showInfoWindow();
                             myMarkers.add(victim2LocationMarker);
@@ -444,7 +446,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             float victim3distance=getDistance(victim3Latitude,victim3Longitude);
                             float distanceInFeet = (float) round((victim3distance*3.2808));
                             Marker victim3LocationMarker=mMap.addMarker(new MarkerOptions().position(victim3Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Bruise,Cut,Redness,Edema,Wheezing,Blistering"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim1Location));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim3Location));
                             mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
                             victim3LocationMarker.showInfoWindow();
                             myMarkers.add(victim3LocationMarker);
@@ -457,7 +459,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             }
 
 
-                        }else if(childData.contains("Accident")){
+                        }else if(childData.contains("Middletown")){
+                            float victim3distance=getDistance(victim3Latitude,victim3Longitude);
+                            float distanceInFeet = (float) round((victim3distance*3.2808));
+                            Marker responder1LocationMarker=mMap.addMarker(new MarkerOptions().position(victim3Location).title("Responders:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("First Responders"));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim3Location));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                            responder1LocationMarker.showInfoWindow();
+                            myMarkers.add(responder1LocationMarker);
+                            for(Marker m: myMarkers){
+                                if(m==responder1LocationMarker){
+                                    m.setVisible(true);
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+
+                        }else if(childData.contains("EMT")){
+                            float victim2distance=getDistance(victim2Latitude,victim2Longitude);
+                            float distanceInFeet = (float) round((victim2distance*3.2808));
+                            Marker responder2LocationMarker=mMap.addMarker(new MarkerOptions().position(victim2Location).title("Responders:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Emergency Medical Team"));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim2Location));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                            responder2LocationMarker.showInfoWindow();
+                            myMarkers.add(responder2LocationMarker);
+                            for(Marker m: myMarkers){
+                                if(m==responder2LocationMarker){
+                                    m.setVisible(true);
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+
+                        }else if(childData.contains("Accident")||childData.contains("Sodium")){
                             for(Marker m: myMarkers){
                                 if(m==incidentLocationMarker){
                                     m.setVisible(true);
@@ -473,7 +509,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 float bystander1distance = getDistance(bystander1Latitude,bystander1Longitude);
                                 float distanceInFeet = (float) round((bystander1distance*3.2808));
                                 Marker bystander1LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander1Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Scaling, Redness"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(victim1Location));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander1Location));
                                 mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
                                 bystander1LocationMarker.showInfoWindow();
                                 myMarkers.add(bystander1LocationMarker);
@@ -488,7 +524,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 float bystander1distance = getDistance(bystander1Latitude,bystander1Longitude);
                                 float distanceInFeet = (float) round((bystander1distance*3.2808));
                                 Marker bystander1LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander1Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(victim1Location));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander1Location));
                                 mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
                                 bystander1LocationMarker.showInfoWindow();
                                 myMarkers.add(bystander1LocationMarker);
@@ -508,7 +544,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 float bystander2distance = getDistance(bystander2Latitude,bystander2Longitude);
                                 float distanceInFeet = (float) round((bystander2distance*3.2808));
                                 Marker bystander2LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander2Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("ExposedTo: SodiumBorohydride"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(victim1Location));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander2Location));
                                 mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
                                 bystander2LocationMarker.showInfoWindow();
                                 myMarkers.add(bystander2LocationMarker);
@@ -523,7 +559,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 float bystander2distance = getDistance(bystander2Latitude,bystander2Longitude);
                                 float distanceInFeet = (float) round((bystander2distance*3.2808));
                                 Marker bystander2LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander2Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(victim1Location));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander2Location));
                                 mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
                                 bystander2LocationMarker.showInfoWindow();
                                 myMarkers.add(bystander2LocationMarker);
