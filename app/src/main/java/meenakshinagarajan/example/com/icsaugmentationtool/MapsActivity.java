@@ -23,8 +23,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ExpandableListView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -61,10 +63,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             "http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric";
     private RelativeLayout mMapView;
     List<Address> address = null;
+    List<Address> incidentAddress = null;
     private double yourLatitude = 39.784450;
     private double yourLongitude = -84.057906;
     private double incidentLatitude = 39.5338;
     private double incidentLongitude = -84.3714;
+    private double sodiumBorohydrideLatitude = 39.384766;
+    private double sodiumBorohydrideLongitude= -84.374207;
     private double victim1Latitude = 39.5340;
     private double victim1Longitude= -84.3717;
     private double victim2Latitude = 39.533735;
@@ -78,10 +83,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int PROXIMITY_RADIUS = 10000;
     ExpandableListAdapter listAdapter;
     ExpandableIncidentListAdapter incidentListAdapter;
-    //ExpandableRiskAdapter riskListAdapter;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
+    List<String> incidentListDataHeader;
+    HashMap<String, List<String>> incidentListDataChild;
     LatLng incidentLocation = new LatLng(incidentLatitude, incidentLongitude);
+    LatLng chemicalLocation = new LatLng(sodiumBorohydrideLatitude, sodiumBorohydrideLongitude);
     LatLng yourLocation = new LatLng(yourLatitude, yourLongitude);
     LatLng victim1Location = new LatLng(victim1Latitude, victim1Longitude);
     LatLng victim2Location = new LatLng(victim2Latitude, victim2Longitude);
@@ -90,22 +97,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     LatLng bystander2Location = new LatLng(bystander2Latitude, bystander2Longitude);
     float distance = 0;
     Geocoder geocoder;
-    List<Address> incidentAddress = getAddress(incidentLatitude, incidentLongitude);
     List<String> oldUpdates=new ArrayList<String>();
     private ViewPager mViewPager;
-    List<String> incidentListDataHeader = new ArrayList<String>();
-    HashMap<String, List<String>> incidentListDataChild = new HashMap<String,List<String>>();
-    List<String> hazardsList = new ArrayList<String>();
-    List<String> respondersList = new ArrayList<String>();
-    List<String> bystandersList = new ArrayList<String>();
-    List<String> symptomsList = new ArrayList<String>();
-    List<String> victimsList = new ArrayList<String>();
+    List<String> hazardsList;
+    List<String> respondersList;
+    List<String> bystandersList;
+    List<String> symptomsList;
+    List<String> victimsList;
     List<String> riskDataHeader;
     HashMap<String, List<String>> riskDataChild;
     //private RecyclerView riskDetailsListView;
     private RecyclerView.Adapter riskListAdapter;
     private RecyclerView.LayoutManager layoutManager;
     ArrayList<Marker> myMarkers = new ArrayList<Marker>();
+    boolean hospitalFlag,schoolFlag;
+    View listView = null;
+    int targetHeight;
 
 
     @Override
@@ -138,9 +145,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
-        // Add a marker in Sydney and move the camera
-        //Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        mMap.getUiSettings().setZoomControlsEnabled(true);
         address = getAddress(yourLatitude, yourLongitude);
+
         Log.d("address:",address.toString());
         Marker currentLocationMarker = mMap.addMarker(new MarkerOptions().position(yourLocation).title("You are here:" + address.get(0).getAddressLine(0)));
         myMarkers.add(currentLocationMarker);
@@ -180,6 +187,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final ToggleButton hospitalButton = (ToggleButton) findViewById(R.id.hospitalButton);
         final ToggleButton schoolButton = (ToggleButton) findViewById(R.id.schoolButton);
         final ToggleButton trafficButton = (ToggleButton) findViewById(R.id.trafficButton);
+       // final ToggleButton incidentUpdatesToggleButton = (ToggleButton) findViewById(R.id.incidentUpdatesToggleButton);
         final ExpandableListView expListView = (ExpandableListView) findViewById(R.id.expandableListView);
         final ExpandableListView incidentDetailsListView = (ExpandableListView) findViewById(R.id.incidentDetailsListView);
         final RecyclerView riskDetailsListView = (RecyclerView) findViewById(R.id.riskDetailsListView);
@@ -201,10 +209,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void run() {
                 alertCard.setVisibility(View.VISIBLE);
+                incidentAddress = getAddress(incidentLatitude, incidentLongitude);
                 alertText.setText("Oh Snap! Vehicular accident at "+incidentAddress.get(0).getAddressLine(0)+" "+distanceInMiles+" "+"miles from your location");
                 takeActionButton.setVisibility(View.VISIBLE);
             }
-        }, 10000);
+        }, 5000);
+
+
+
+        
 
 
         //after click of takeaction button
@@ -233,57 +246,46 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //Resize map fragment
                 mMapView = (RelativeLayout) findViewById(R.id.rl);
-                ResizeAnimation resizeAnimation = new ResizeAnimation(mMapView,650,mMapView.getWidth());
+                ResizeAnimation resizeAnimation = new ResizeAnimation(mMapView,650,mMapView.getWidth(),mMapView.getHeight(),mMapView.getHeight());
                 resizeAnimation.setDuration(500);
                 mMapView.startAnimation(resizeAnimation);
                 mMapView.requestLayout();
 
 
 
-                //Tab Layout
-                tabLayout.setVisibility(View.VISIBLE);
-                tabLayout.addTab(tabLayout.newTab().setText("Incident Details"));
-                tabLayout.addTab(tabLayout.newTab().setText("Predicted Risks"));
-                TabLayout.Tab tab=tabLayout.getTabAt(0);
-                tab.select();
-                tabLayout.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager) {
-                    @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
-                        switch (tab.getPosition()){
-                            case 0:
-                                incidentDetailsListView.setVisibility(View.VISIBLE);
-                                rl.setVisibility(View.INVISIBLE);
-                            case 1:
-                        }
+                incidentDetailsListView.setVisibility(View.VISIBLE);
 
-                    }
-                   @Override
-                    public void onTabUnselected(TabLayout.Tab tab) {
-                        switch (tab.getPosition()){
-                            case 0:
-                                incidentDetailsListView.setVisibility(View.INVISIBLE);
-                                rl.setVisibility(View.VISIBLE);
-                            case 1:
-                        }
-                    }
-                });
+
 
 
                 //display nearby hospitals
                 hospitalButton.setVisibility(View.VISIBLE);
                 hospitalButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    String Hospital = "hospital";
+
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        String Hospital = "hospital";
                         if (isChecked) {
                             // The toggle is enabled
+                            hospitalFlag=true;
                             String url = getUrl(incidentLatitude, incidentLongitude, Hospital);
                             Object[] DataTransfer = new Object[2];
                             DataTransfer[0] = mMap;
                             DataTransfer[1] = url;
                             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
                             getNearbyPlacesData.execute(DataTransfer);
+                            for(Marker m: myMarkers){
+                                if(m==incidentLocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+
                         } else {
                             // The toggle is disabled
+                            hospitalFlag=false;
                             mMap.clear();
                             Marker incidentLocationMarker = mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Incident Location:" +incidentAddress.get(0).getAddressLine(0)));
                             incidentLocationMarker.showInfoWindow();
@@ -297,8 +299,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     .fillColor(Color.argb(128, 255, 0, 0))
                                     .clickable(true);
                             Circle circle = mMap.addCircle(circleOptions);
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
-                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+
+                            if(schoolFlag){
+                                String url = getUrl(incidentLatitude, incidentLongitude, "school");
+                                Object[] DataTransfer = new Object[2];
+                                DataTransfer[0] = mMap;
+                                DataTransfer[1] = url;
+                                GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+                                getNearbyPlacesData.execute(DataTransfer);
+                            }
+
 
                         }
                     }
@@ -311,14 +321,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         if (isChecked) {
                             // The toggle is enabled
+                            schoolFlag=true;
                             String url = getUrl(incidentLatitude, incidentLongitude, School);
                             Object[] DataTransfer = new Object[2];
                             DataTransfer[0] = mMap;
                             DataTransfer[1] = url;
                             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
                             getNearbyPlacesData.execute(DataTransfer);
+
+                            for(Marker m: myMarkers){
+                                if(m==incidentLocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
                         } else {
-                            // The toggle is disabled
+                            schoolFlag=false;
                             mMap.clear();
                             Marker incidentLocationMarker = mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Incident Location:" +incidentAddress.get(0).getAddressLine(0)));
                             incidentLocationMarker.showInfoWindow();
@@ -332,8 +353,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     .fillColor(Color.argb(128, 255, 0, 0))
                                     .clickable(true);
                             Circle circle = mMap.addCircle(circleOptions);
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
-                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                            if(hospitalFlag){
+                                String url = getUrl(incidentLatitude, incidentLongitude, "hospital");
+                                Object[] DataTransfer = new Object[2];
+                                DataTransfer[0] = mMap;
+                                DataTransfer[1] = url;
+                                GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+                                getNearbyPlacesData.execute(DataTransfer);
+                            }
+
+
 
                         }
                     }
@@ -347,153 +376,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                         if (isChecked) {
                             mMap.setTrafficEnabled(true);
-                        }else{
-                            mMap.setTrafficEnabled(false);
-                        }
-                    }
-                });
-
-                //expandable list view
-                expListView.setVisibility(View.VISIBLE);
-                expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener(){
-
-                    @Override
-                    public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long id) {
-
-                        TextView childText = (TextView) view.findViewById(R.id.lblListItem);
-                        String data = (String) childText.getText();
-                        prepareRiskData(data);
-                        riskListAdapter = new ExpandableRiskAdapter(MapsActivity.this, riskDataHeader, riskDataChild);
-                        riskDetailsListView.setAdapter(riskListAdapter);
-
-                        return false;
-                    }
-                });
-                final String[] data={"Vehicular accident at Middletown","Vehicles involved: Chemical truck, Car, Police vehicle","First responders: Middletown police department","Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Sodium borohydride presence detected","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Bystanders exhibits mild scaling, red hands","Police van driver exhibits edema"};
-                final ArrayList<String> myUpdates = new ArrayList<String>();
-                        //"Bystanders moved the truck driver and police van driver to the side of the road","EMT support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver found","Police van driver exhibits edema"};
-                final Handler handler = new Handler();
-
-                handler.postDelayed(new Runnable() {
-                    int i=0;
-                    int j=-1;
-                    @Override
-                    public void run() {
-
-                        if(i<data.length) {
-                            prepareListData(data[i], data[j + 1]);
-                            listAdapter = new ExpandableListAdapter(MapsActivity.this, listDataHeader, listDataChild);
-                            expListView.setAdapter(listAdapter);
-                            myUpdates.add(data[i]);
-                            prepareIncidentListData(data[i]);
-                            incidentListAdapter = new ExpandableIncidentListAdapter(MapsActivity.this, incidentListDataHeader, incidentListDataChild);
-                            incidentDetailsListView.setAdapter(incidentListAdapter);
-                            prepareRiskData(data[i]);
-                            riskListAdapter = new ExpandableRiskAdapter(MapsActivity.this, riskDataHeader, riskDataChild);
-                            riskDetailsListView.setAdapter(riskListAdapter);
-
-                        }else{
-
-                        }
-                        i=i+1;
-                        j=j+1;
-                        handler.postDelayed(this, 5000);
-
-                    }
-
-
-                }, 1000);
-
-                incidentDetailsListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener(){
-                    @Override
-                    public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long id) {
-                        TextView childText = (TextView) view.findViewById(R.id.lblIncidentListItem);
-                        String childData = (String) childText.getText();
-                        if(childData.contains("Todd")){
-                            float victim1distance=getDistance(victim1Latitude,victim1Longitude);
-                            float distanceInFeet = (float) round((victim1distance*3.2808));
-                            Marker victim1LocationMarker=mMap.addMarker(new MarkerOptions().position(victim1Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Break,Bruise,Cuts,Redness,Blistering"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim1Location));
-                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                            victim1LocationMarker.showInfoWindow();
-                            myMarkers.add(victim1LocationMarker);
-                            for(Marker m: myMarkers){
-                                if(m==victim1LocationMarker){
-                                    m.setVisible(true);
-                                }else{
-                                    m.setVisible(false);
-                                }
-                            }
-
-                        }else if(childData.contains("Leicy")){
-                            float victim2distance=getDistance(victim2Latitude,victim2Longitude);
-                            float distanceInFeet = (float) round((victim2distance*3.2808));
-                            Marker victim2LocationMarker=mMap.addMarker(new MarkerOptions().position(victim2Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Cut,Redness,Edema,Wheezing,Blistering,Unconsciousness"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim2Location));
-                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                            victim2LocationMarker.showInfoWindow();
-                            myMarkers.add(victim2LocationMarker);
-                            for(Marker m: myMarkers){
-                                if(m==victim2LocationMarker){
-                                    m.setVisible(true);
-                                }else{
-                                    m.setVisible(false);
-                                }
-                            }
-
-
-                        }else if(childData.contains("Chris")){
-                            float victim3distance=getDistance(victim3Latitude,victim3Longitude);
-                            float distanceInFeet = (float) round((victim3distance*3.2808));
-                            Marker victim3LocationMarker=mMap.addMarker(new MarkerOptions().position(victim3Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Bruise,Cut,Redness,Edema,Wheezing,Blistering"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim3Location));
-                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                            victim3LocationMarker.showInfoWindow();
-                            myMarkers.add(victim3LocationMarker);
-                            for(Marker m: myMarkers){
-                                if(m==victim3LocationMarker){
-                                    m.setVisible(true);
-                                }else{
-                                    m.setVisible(false);
-                                }
-                            }
-
-
-                        }else if(childData.contains("Middletown")){
-                            float victim3distance=getDistance(victim3Latitude,victim3Longitude);
-                            float distanceInFeet = (float) round((victim3distance*3.2808));
-                            Marker responder1LocationMarker=mMap.addMarker(new MarkerOptions().position(victim3Location).title("Responders:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("First Responders"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim3Location));
-                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                            responder1LocationMarker.showInfoWindow();
-                            myMarkers.add(responder1LocationMarker);
-                            for(Marker m: myMarkers){
-                                if(m==responder1LocationMarker){
-                                    m.setVisible(true);
-                                }else{
-                                    m.setVisible(false);
-                                }
-                            }
-
-
-                        }else if(childData.contains("EMT")){
-                            float victim2distance=getDistance(victim2Latitude,victim2Longitude);
-                            float distanceInFeet = (float) round((victim2distance*3.2808));
-                            Marker responder2LocationMarker=mMap.addMarker(new MarkerOptions().position(victim2Location).title("Responders:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Emergency Medical Team"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim2Location));
-                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                            responder2LocationMarker.showInfoWindow();
-                            myMarkers.add(responder2LocationMarker);
-                            for(Marker m: myMarkers){
-                                if(m==responder2LocationMarker){
-                                    m.setVisible(true);
-                                }else{
-                                    m.setVisible(false);
-                                }
-                            }
-
-
-                        }else if(childData.contains("Accident")||childData.contains("Sodium")){
                             for(Marker m: myMarkers){
                                 if(m==incidentLocationMarker){
                                     m.setVisible(true);
@@ -503,78 +385,1242 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 }
                             }
 
-
-                        }else if(childData.contains("Will") || childData.contains("Sam")){
-                            if(myUpdates.toString().contains("Bystanders exhibits")){
-                                float bystander1distance = getDistance(bystander1Latitude,bystander1Longitude);
-                                float distanceInFeet = (float) round((bystander1distance*3.2808));
-                                Marker bystander1LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander1Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Scaling, Redness"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander1Location));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                                bystander1LocationMarker.showInfoWindow();
-                                myMarkers.add(bystander1LocationMarker);
-                                for(Marker m: myMarkers){
-                                    if(m==bystander1LocationMarker){
-                                        m.setVisible(true);
-                                    }else{
-                                        m.setVisible(false);
-                                    }
-                                }
-                            }else{
-                                float bystander1distance = getDistance(bystander1Latitude,bystander1Longitude);
-                                float distanceInFeet = (float) round((bystander1distance*3.2808));
-                                Marker bystander1LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander1Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander1Location));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                                bystander1LocationMarker.showInfoWindow();
-                                myMarkers.add(bystander1LocationMarker);
-                                for(Marker m: myMarkers){
-                                    if(m==bystander1LocationMarker){
-                                        m.setVisible(true);
-                                    }else{
-                                        m.setVisible(false);
-                                    }
-                                }
-                            }
-
-
-
-                        }else if(childData.contains("Jessica") || childData.contains("Brandon")){
-                            if(myUpdates.toString().contains("Sodium borohydride")){
-                                float bystander2distance = getDistance(bystander2Latitude,bystander2Longitude);
-                                float distanceInFeet = (float) round((bystander2distance*3.2808));
-                                Marker bystander2LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander2Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("ExposedTo: SodiumBorohydride"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander2Location));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                                bystander2LocationMarker.showInfoWindow();
-                                myMarkers.add(bystander2LocationMarker);
-                                for(Marker m: myMarkers){
-                                    if(m==bystander2LocationMarker){
-                                        m.setVisible(true);
-                                    }else{
-                                        m.setVisible(false);
-                                    }
-                                }
-                            }else{
-                                float bystander2distance = getDistance(bystander2Latitude,bystander2Longitude);
-                                float distanceInFeet = (float) round((bystander2distance*3.2808));
-                                Marker bystander2LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander2Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander2Location));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
-                                bystander2LocationMarker.showInfoWindow();
-                                myMarkers.add(bystander2LocationMarker);
-                                for(Marker m: myMarkers){
-                                    if(m==bystander2LocationMarker){
-                                        m.setVisible(true);
-                                    }else{
-                                        m.setVisible(false);
-                                    }
-                                }
-                            }
-
-
+                        }else{
+                            mMap.setTrafficEnabled(false);
 
                         }
+                    }
+                });
+
+
+
+
+                //expandable list view
+                expListView.setVisibility(View.VISIBLE);
+                targetHeight=expListView.getHeight();
+
+                expListView.setOnTouchListener(new OnSwipeTouchListener(MapsActivity.this){
+                    @Override
+                    public void onSwipeLeft() {
+                        super.onSwipeLeft();
+                        ResizeAnimation resizeAnimation = new ResizeAnimation(expListView,70,expListView.getWidth(),70,expListView.getHeight());
+                        resizeAnimation.setDuration(500);
+                        expListView.startAnimation(resizeAnimation);
+
+                        LatLng newPosition = mMap.getCameraPosition().target;
+                        double distance = getDistance(newPosition.latitude, newPosition.longitude);
+                        Log.d("DistanceMovedSwipeLeft", ((String.valueOf(distance)) ));
+                        if(distance > 10){
+                            //Log.d("Camera movement change","camera moved");
+
+                            Toast.makeText(MapsActivity.this, "Camera moved", Toast.LENGTH_SHORT).show();
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                            for(Marker m:myMarkers){
+                                if(m.isVisible()){
+                                    m.showInfoWindow();
+                                }else{
+                                    incidentLocationMarker.setVisible(true);
+                                    incidentLocationMarker.showInfoWindow();
+                                }
+                            }
+                        }
+
+                    }
+
+                @Override
+                public void onSwipeRight() {
+                    super.onSwipeRight();
+                    ResizeAnimation resizeAnimation = new ResizeAnimation(expListView,650,expListView.getWidth(),targetHeight,70);
+                    resizeAnimation.setDuration(200);
+                    expListView.startAnimation(resizeAnimation);
+
+                    LatLng newPosition = mMap.getCameraPosition().target;
+                    double distance = getDistance(newPosition.latitude, newPosition.longitude);
+                    Log.d("DistanceMovedSwipeRight", ((String.valueOf(distance)) ));
+                    if(distance > 10){
+                        Log.d("Camera movement change","camera moved");
+                        Toast.makeText(MapsActivity.this, "Camera moved", Toast.LENGTH_SHORT).show();
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                        for(Marker m:myMarkers){
+                            if(m.isVisible()){
+                                m.showInfoWindow();
+                            }else{
+                                incidentLocationMarker.setVisible(true);
+                                incidentLocationMarker.showInfoWindow();
+                            }
+                        }
+
+                    }
+
+
+                }
+                });
+
+
+
+                expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener(){
+
+                    @Override
+                    public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long id) {
+
+                        expListView.collapseGroup(groupPosition);
+
+                        TextView childText = (TextView) view.findViewById(R.id.lblListItem);
+                        String data = (String) childText.getText();
+
+
+                        listDataHeader = new ArrayList<String>();
+                        // Adding child data
+                        listDataHeader.add("Incident Updates:"+data);
+                        listDataChild.put(listDataHeader.get(0),(oldUpdates));
+                        listAdapter = new ExpandableListAdapter(MapsActivity.this, listDataHeader, listDataChild);
+                        expListView.setAdapter(listAdapter);
+                        prepareIncidentListData(data);
+                        incidentListAdapter = new ExpandableIncidentListAdapter(MapsActivity.this, incidentListDataHeader, incidentListDataChild);
+                        incidentDetailsListView.setAdapter(incidentListAdapter);
+
+                        incidentDetailsListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+                            @Override
+                            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                                return true;
+                            }
+                        });
+
+                        if(data.contains("edema")){
+                            incidentDetailsListView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    incidentDetailsListView.requestFocusFromTouch();
+                                    incidentDetailsListView.setSelection(3);
+                                    incidentDetailsListView.requestFocus();
+
+                                    Marker chemicalLocationMarker = mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Ricin Toxin").snippet("can cause: Itching, Blindness, Redness, Scaling, Blistering, Coughing, Sneezing" + "\n" + "\n" + "Suggested mitigations: Gloves, Self Breathing apparatus, Boots, Splash goggles"));
+                                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                        @Override
+                                        public View getInfoWindow(Marker arg0) {
+                                            return null;
+                                        }
+
+                                        @Override
+                                        public View getInfoContents(Marker marker) {
+
+                                            LinearLayout info = new LinearLayout(MapsActivity.this);
+                                            info.setOrientation(LinearLayout.VERTICAL);
+
+                                            TextView title = new TextView(MapsActivity.this);
+                                            title.setTextColor(Color.BLACK);
+                                            title.setTypeface(null, Typeface.BOLD);
+                                            title.setText(marker.getTitle());
+
+                                            TextView snippet = new TextView(MapsActivity.this);
+                                            snippet.setTextColor(Color.DKGRAY);
+                                            snippet.setText(marker.getSnippet());
+
+                                            info.addView(title);
+                                            info.addView(snippet);
+
+                                            return info;
+                                        }
+                                    });
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                    chemicalLocationMarker.showInfoWindow();
+                                    myMarkers.add(chemicalLocationMarker);
+                                    for (Marker m : myMarkers) {
+                                        if (m == chemicalLocationMarker) {
+                                            m.setVisible(true);
+                                        } else {
+                                            m.setVisible(false);
+                                        }
+
+                                    }
+                                }
+                            });
+                        }
+                        if(data.contains("Middletown police")) {
+                            incidentDetailsListView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    incidentDetailsListView.requestFocusFromTouch();
+                                    incidentDetailsListView.smoothScrollToPosition(12);
+                                    incidentDetailsListView.requestFocus();
+                                    Marker responder1LocationMarker = mMap.addMarker(new MarkerOptions().position(victim3Location).title("First Responders: Middletown Police Department 147.0 feet from incident location").snippet("Susceptible to nearby hazards: Sodium Borohydride" + "\n" + "\n" + "Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+                                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                        @Override
+                                        public View getInfoWindow(Marker arg0) {
+                                            return null;
+                                        }
+
+                                        @Override
+                                        public View getInfoContents(Marker marker) {
+
+                                            LinearLayout info = new LinearLayout(MapsActivity.this);
+                                            info.setOrientation(LinearLayout.VERTICAL);
+
+                                            TextView title = new TextView(MapsActivity.this);
+                                            title.setTextColor(Color.BLACK);
+                                            title.setTypeface(null, Typeface.BOLD);
+                                            title.setText(marker.getTitle());
+
+                                            TextView snippet = new TextView(MapsActivity.this);
+                                            snippet.setTextColor(Color.DKGRAY);
+                                            snippet.setText(marker.getSnippet());
+
+                                            info.addView(title);
+                                            info.addView(snippet);
+
+                                            return info;
+                                        }
+                                    });
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                    responder1LocationMarker.showInfoWindow();
+                                    myMarkers.add(responder1LocationMarker);
+                                    for (Marker m : myMarkers) {
+                                        if (m == responder1LocationMarker) {
+                                            m.setVisible(true);
+                                        } else {
+                                            m.setVisible(false);
+                                        }
+
+                                    }
+                                }
+                            });
+                        }
+                        if(data.contains("EMS")){
+                            incidentDetailsListView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    incidentDetailsListView.requestFocusFromTouch();
+                                    incidentDetailsListView.smoothScrollToPosition(11);
+                                    incidentDetailsListView.requestFocus();
+                                    Marker responder2LocationMarker=mMap.addMarker(new MarkerOptions().position(victim2Location).title("First Responders:EMS. 209.0 feet from incident location").snippet("Susceptible to nearby hazards: Sodium Borohydride"+"\n"+"\n"+"Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+                                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                        @Override
+                                        public View getInfoWindow(Marker arg0) {
+                                            return null;
+                                        }
+
+                                        @Override
+                                        public View getInfoContents(Marker marker) {
+
+                                            LinearLayout info = new LinearLayout(MapsActivity.this);
+                                            info.setOrientation(LinearLayout.VERTICAL);
+
+                                            TextView title = new TextView(MapsActivity.this);
+                                            title.setTextColor(Color.BLACK);
+                                            title.setTypeface(null, Typeface.BOLD);
+                                            title.setText(marker.getTitle());
+
+                                            TextView snippet = new TextView(MapsActivity.this);
+                                            snippet.setTextColor(Color.DKGRAY);
+                                            snippet.setText(marker.getSnippet());
+
+                                            info.addView(title);
+                                            info.addView(snippet);
+
+                                            return info;
+                                        }
+                                    });
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                    responder2LocationMarker.showInfoWindow();
+                                    myMarkers.add(responder2LocationMarker);
+                                    for(Marker m: myMarkers) {
+                                        if (m == responder2LocationMarker) {
+                                            m.setVisible(true);
+                                        } else {
+                                            m.setVisible(false);
+                                        }
+
+                                    }
+                                }
+                            });
+                        }
+                        if(data.contains("Sodium")){
+                            incidentDetailsListView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    incidentDetailsListView.requestFocusFromTouch();
+                                    incidentDetailsListView.setSelection(2);
+                                    incidentDetailsListView.requestFocus();
+                                    Marker sodiumBorohydrideLocationMarker=mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Sodium Borohydride").snippet("Physical description: Solid White Grayish powder. Easily soluble in cold water"+"\n"+"\n"+"Formula: NaBH4"+"\n"+"\n"+"Synonym: Sodium Tetrahydrodorate"+"\n"+"\n"+"can cause: Itching, Blindness, Redness, Scaling, Blistering, Coughing, Sneezing"+"\n"+"\n"+"Suggested mitigations: Gloves, Self Breathing apparatus, Boots, Splash goggles"));
+                                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                        @Override
+                                        public View getInfoWindow(Marker arg0) {
+                                            return null;
+                                        }
+
+                                        @Override
+                                        public View getInfoContents(Marker marker) {
+
+                                            LinearLayout info = new LinearLayout(MapsActivity.this);
+                                            info.setOrientation(LinearLayout.VERTICAL);
+
+                                            TextView title = new TextView(MapsActivity.this);
+                                            title.setTextColor(Color.BLACK);
+                                            title.setTypeface(null, Typeface.BOLD);
+                                            title.setText(marker.getTitle());
+
+                                            TextView snippet = new TextView(MapsActivity.this);
+                                            snippet.setTextColor(Color.DKGRAY);
+                                            snippet.setText(marker.getSnippet());
+
+                                            info.addView(title);
+                                            info.addView(snippet);
+
+                                            return info;
+                                        }
+                                    });
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                    sodiumBorohydrideLocationMarker.showInfoWindow();
+                                    myMarkers.add(sodiumBorohydrideLocationMarker);
+
+                                    for(Marker m: myMarkers){
+                                        if(m==sodiumBorohydrideLocationMarker){
+                                            m.setVisible(true);
+                                        }else{
+                                            m.setVisible(false);
+                                        }
+                                    }
+
+
+                                }
+                            });
+                        }if(data.contains("accident")) {
+                            incidentDetailsListView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Marker incidentMarker = mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Vehicular Accident").snippet("can cause: Cuts, Bruises, Break, Unconsciousness" + "\n" + "\n" + "Suggested mitigations: Seat Belt, Air bag"));
+                                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                        @Override
+                                        public View getInfoWindow(Marker arg0) {
+                                            return null;
+                                        }
+
+                                        @Override
+                                        public View getInfoContents(Marker marker) {
+
+                                            LinearLayout info = new LinearLayout(MapsActivity.this);
+                                            info.setOrientation(LinearLayout.VERTICAL);
+
+                                            TextView title = new TextView(MapsActivity.this);
+                                            title.setTextColor(Color.BLACK);
+                                            title.setTypeface(null, Typeface.BOLD);
+                                            title.setText(marker.getTitle());
+
+                                            TextView snippet = new TextView(MapsActivity.this);
+                                            snippet.setTextColor(Color.DKGRAY);
+                                            snippet.setText(marker.getSnippet());
+
+                                            info.addView(title);
+                                            info.addView(snippet);
+
+                                            return info;
+                                        }
+                                    });
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                    incidentMarker.showInfoWindow();
+                                    for (Marker m : myMarkers) {
+                                        if (m == incidentMarker) {
+                                            m.setVisible(true);
+                                            m.showInfoWindow();
+                                        } else {
+                                            m.setVisible(false);
+                                        }
+
+
+                                    }
+                                }
+                            });
+                        }
+
+                        return false;
+                    }
+                });
+
+                final String[] data={"Vehicular accident at Middletown and symptoms found broken leg, red skin, blisters, scaling, cuts, bruises","First responders arrived: Middletown police department","EMS support requested","Sodium borohydride presence detected","Driver and Car passenger experience breathing difficulty and their lips and eyes are swollen with edema"};
+                final ArrayList<String> myUpdates = new ArrayList<String>();
+                        //"Bystanders moved the truck driver and police van driver to the side of the road","EMS support requested","Symptoms found: cuts, bruises, red skin, blisters, breathing difficulty, edema","Sodium borohydride presence detected","Police van driver found","Police van driver exhibits edema"};
+                final Handler handler = new Handler();
+
+
+
+                handler.postDelayed(new Runnable() {
+                    int i=0;
+                    int j=-1;
+
+                    final Handler h = new Handler();
+                    final int delay = 100;
+
+
+
+
+
+
+
+                    @Override
+                    public void run() {
+                        if(i<data.length) {
+                            prepareListData(data[i], data[j + 1]);
+                            listAdapter = new ExpandableListAdapter(MapsActivity.this, listDataHeader, listDataChild);
+                            expListView.setAdapter(listAdapter);
+                            myUpdates.add(data[i]);
+                            prepareIncidentListData(data[i]);
+                            incidentListAdapter = new ExpandableIncidentListAdapter(MapsActivity.this, incidentListDataHeader, incidentListDataChild);
+                            incidentDetailsListView.setAdapter(incidentListAdapter);
+
+                            incidentDetailsListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+                                @Override
+                                public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                                    return true;
+                                }
+                            });
+
+                            if(data[i].contains("edema")){
+                                incidentDetailsListView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        incidentDetailsListView.requestFocusFromTouch();
+                                        incidentDetailsListView.setSelection(3);
+                                        incidentDetailsListView.requestFocus();
+                                        Marker chemicalLocationMarker=mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Ricin Toxin").snippet("can cause: Fever, Cough, Pulmonary edema"+"\n"+"\n"+"Suggested mitigations: Gloves, Self Breathing apparatus, Boots, Splash goggles"+"\n"+"\n"+"First Aid: Remove contaminated clothes, Never give anything to drink for an unconscious victim"));
+                                        if(myMarkers.contains(chemicalLocationMarker)){
+
+                                        }else{
+                                            myMarkers.add(chemicalLocationMarker);
+                                        }
+
+                                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                            @Override
+                                            public View getInfoWindow(Marker arg0) {
+                                                return null;
+                                            }
+
+                                            @Override
+                                            public View getInfoContents(Marker marker) {
+
+                                                LinearLayout info = new LinearLayout(MapsActivity.this);
+                                                info.setOrientation(LinearLayout.VERTICAL);
+
+                                                TextView title = new TextView(MapsActivity.this);
+                                                title.setTextColor(Color.BLACK);
+                                                title.setTypeface(null, Typeface.BOLD);
+                                                title.setText(marker.getTitle());
+
+                                                TextView snippet = new TextView(MapsActivity.this);
+                                                snippet.setTextColor(Color.DKGRAY);
+                                                snippet.setText(marker.getSnippet());
+
+                                                info.addView(title);
+                                                info.addView(snippet);
+
+                                                return info;
+                                            }
+                                        });
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                        //chemicalLocationMarker.showInfoWindow();
+                                        myMarkers.add(chemicalLocationMarker);
+                                        for(Marker m: myMarkers) {
+                                            if (m == chemicalLocationMarker) {
+                                                m.setVisible(true);
+                                                m.showInfoWindow();
+                                            } else {
+                                                m.setVisible(false);
+                                            }
+
+                                        }
+                                    }
+                                });
+                            }
+                            if(data[i].contains("EMS")){
+                                incidentDetailsListView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        incidentDetailsListView.requestFocusFromTouch();
+                                        incidentDetailsListView.smoothScrollToPosition(13);
+                                        incidentDetailsListView.setSelection(14);
+                                        incidentDetailsListView.requestFocus();
+                                        Marker responder2LocationMarker=mMap.addMarker(new MarkerOptions().position(victim2Location).title("First Responders:EMS. 209.0 feet from incident location").snippet("Susceptible to nearby hazards: Sodium Borohydride"+"\n"+"\n"+"Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+                                        if(myMarkers.contains(responder2LocationMarker)){
+
+                                        }else{
+                                            myMarkers.add(responder2LocationMarker);
+                                        }
+
+                                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                            @Override
+                                            public View getInfoWindow(Marker arg0) {
+                                                return null;
+                                            }
+
+                                            @Override
+                                            public View getInfoContents(Marker marker) {
+
+                                                LinearLayout info = new LinearLayout(MapsActivity.this);
+                                                info.setOrientation(LinearLayout.VERTICAL);
+
+                                                TextView title = new TextView(MapsActivity.this);
+                                                title.setTextColor(Color.BLACK);
+                                                title.setTypeface(null, Typeface.BOLD);
+                                                title.setText(marker.getTitle());
+
+                                                TextView snippet = new TextView(MapsActivity.this);
+                                                snippet.setTextColor(Color.DKGRAY);
+                                                snippet.setText(marker.getSnippet());
+
+                                                info.addView(title);
+                                                info.addView(snippet);
+
+                                                return info;
+                                            }
+                                        });
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                        //responder2LocationMarker.showInfoWindow();
+                                        myMarkers.add(responder2LocationMarker);
+                                        for(Marker m: myMarkers) {
+                                            if (m == responder2LocationMarker) {
+                                                m.setVisible(true);
+                                                m.showInfoWindow();
+                                            } else {
+                                                m.setVisible(false);
+                                            }
+
+                                        }
+                                    }
+                                });
+                            }
+                            if(data[i].contains("Middletown police")){
+                                incidentDetailsListView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        incidentDetailsListView.requestFocusFromTouch();
+                                        incidentDetailsListView.smoothScrollToPosition(13);
+                                        incidentDetailsListView.setSelection(12);
+                                        incidentDetailsListView.requestFocus();
+                                        Marker responder1LocationMarker=mMap.addMarker(new MarkerOptions().position(victim3Location).title("First Responders: Middletown Police Department 147.0 feet from incident location").snippet("Susceptible to nearby hazards: Sodium Borohydride"+"\n"+"\n"+"Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+                                        if(myMarkers.contains(responder1LocationMarker)){
+
+                                        }else{
+                                            myMarkers.add(responder1LocationMarker);
+                                        }
+                                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                            @Override
+                                            public View getInfoWindow(Marker arg0) {
+                                                return null;
+                                            }
+
+                                            @Override
+                                            public View getInfoContents(Marker marker) {
+
+                                                LinearLayout info = new LinearLayout(MapsActivity.this);
+                                                info.setOrientation(LinearLayout.VERTICAL);
+
+                                                TextView title = new TextView(MapsActivity.this);
+                                                title.setTextColor(Color.BLACK);
+                                                title.setTypeface(null, Typeface.BOLD);
+                                                title.setText(marker.getTitle());
+
+                                                TextView snippet = new TextView(MapsActivity.this);
+                                                snippet.setTextColor(Color.DKGRAY);
+                                                snippet.setText(marker.getSnippet());
+
+                                                info.addView(title);
+                                                info.addView(snippet);
+
+                                                return info;
+                                            }
+                                        });
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                        //responder1LocationMarker.showInfoWindow();
+                                        myMarkers.add(responder1LocationMarker);
+                                        for(Marker m: myMarkers) {
+                                            if (m == responder1LocationMarker) {
+                                                m.setVisible(true);
+                                                m.showInfoWindow();
+                                            } else {
+                                                m.setVisible(false);
+                                            }
+
+                                        }
+                                    }
+                                });
+                            }
+                            if(data[i].contains("Sodium")){
+                                incidentDetailsListView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        incidentDetailsListView.requestFocusFromTouch();
+                                        incidentDetailsListView.setSelection(2);
+                                        incidentDetailsListView.requestFocus();
+                                        Marker sodiumBorohydrideLocationMarker=mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Sodium Borohydride").snippet("Physical description: Solid White Grayish powder. Easily soluble in cold water"+"\n"+"\n"+"can cause: Itching, Blindness, Redness, Scaling, Blistering, Coughing, Sneezing"+"\n"+"\n"+"Suggested mitigations: Gloves, Self Breathing apparatus, Boots, Splash goggles"+"\n"+"\n"+"First Aid: Remove contaminated clothes, Wash with a disinfectant, Allow the victim to rest in a well ventillated area"));
+                                        if(myMarkers.contains(sodiumBorohydrideLocationMarker)){
+
+                                        }else{
+                                            myMarkers.add(sodiumBorohydrideLocationMarker);
+                                        }
+                                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                            @Override
+                                            public View getInfoWindow(Marker arg0) {
+                                                return null;
+                                            }
+
+                                            @Override
+                                            public View getInfoContents(Marker marker) {
+
+                                                LinearLayout info = new LinearLayout(MapsActivity.this);
+                                                info.setOrientation(LinearLayout.VERTICAL);
+
+                                                TextView title = new TextView(MapsActivity.this);
+                                                title.setTextColor(Color.BLACK);
+                                                title.setTypeface(null, Typeface.BOLD);
+                                                title.setText(marker.getTitle());
+
+                                                String s=marker.getSnippet();
+                                                Log.d("marker:","snippet:"+s);
+
+
+                                                TextView snippet = new TextView(MapsActivity.this);
+                                                snippet.setTextColor(Color.DKGRAY);
+                                                snippet.setText(marker.getSnippet());
+
+                                                info.addView(title);
+                                                info.addView(snippet);
+
+                                                return info;
+                                            }
+                                        });
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                        //sodiumBorohydrideLocationMarker.showInfoWindow();
+                                        myMarkers.add(sodiumBorohydrideLocationMarker);
+
+                                        for(Marker m: myMarkers){
+                                            if(m==sodiumBorohydrideLocationMarker){
+                                                m.setVisible(true);
+                                                m.showInfoWindow();
+                                            }else{
+                                                m.setVisible(false);
+                                            }
+                                        }
+
+                                    }
+                                });
+                            }if(data[i].contains("accident")) {
+                                incidentDetailsListView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Marker incidentMarker = mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Vehicular Accident").snippet("can cause: Cuts, Bruises, Break, Unconsciousness" + "\n" + "\n" + "Suggested mitigations: Seat Belt, Air bag"));
+                                        if(myMarkers.contains(incidentMarker)){
+
+                                        }else{
+                                            myMarkers.add(incidentMarker);
+                                        }
+                                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                            @Override
+                                            public View getInfoWindow(Marker arg0) {
+                                                return null;
+                                            }
+
+                                            @Override
+                                            public View getInfoContents(Marker marker) {
+
+                                                LinearLayout info = new LinearLayout(MapsActivity.this);
+                                                info.setOrientation(LinearLayout.VERTICAL);
+
+                                                TextView title = new TextView(MapsActivity.this);
+                                                title.setTextColor(Color.BLACK);
+                                                title.setTypeface(null, Typeface.BOLD);
+                                                title.setText(marker.getTitle());
+
+                                                TextView snippet = new TextView(MapsActivity.this);
+                                                snippet.setTextColor(Color.DKGRAY);
+                                                snippet.setText(marker.getSnippet());
+
+                                                info.addView(title);
+                                                info.addView(snippet);
+
+                                                return info;
+                                            }
+                                        });
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                                        //incidentMarker.showInfoWindow();
+                                        for (Marker m : myMarkers) {
+                                            if (m == incidentMarker) {
+                                                m.setVisible(true);
+                                                m.showInfoWindow();
+                                            } else {
+                                                m.setVisible(false);
+                                            }
+
+
+                                        }
+                                    }
+                                });
+                            }
+
+                        }else{
+
+                        }
+
+                        i=i+1;
+                        j=j+1;
+                        LatLng newPosition = mMap.getCameraPosition().target;
+                        double distance = getDistance(newPosition.latitude, newPosition.longitude);
+                        Log.d("Distance moved", ((String.valueOf(distance)) ));
+                        if(distance > 10){
+                            Log.d("Camera movement change","camera moved");
+                            Toast.makeText(MapsActivity.this, "Camera moved", Toast.LENGTH_SHORT).show();
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                            for(Marker m:myMarkers){
+                                if(m.isVisible()){
+                                    String markertitle=m.getTitle();
+                                    Log.d("MARKER TITLE",markertitle);
+//                                    m.showInfoWindow();
+                                }else{
+                                   //m.setVisible(false);
+                                    incidentLocationMarker.setVisible(true);
+                                    //incidentLocationMarker.showInfoWindow();
+                                }
+                            }
+                        }
+                        handler.postDelayed(this, 20000);
+
+                    }
+
+
+
+
+                }, 1000);
+
+
+                incidentDetailsListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener(){
+                    @Override
+                    public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long id) {
+                        expListView.collapseGroup(0);
+
+                        incidentDetailsListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+                            @Override
+                            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                                return true;
+                            }
+                        });
+                        TextView childText = (TextView) view.findViewById(R.id.lblIncidentListItem);
+                        String childData = (String) childText.getText();
+                        if(childData.contains("Todd")){
+                            float victim1distance=getDistance(victim1Latitude,victim1Longitude);
+                            float distanceInFeet = (float) round((victim1distance*3.2808));
+                            Marker victim1LocationMarker=mMap.addMarker(new MarkerOptions().position(victim1Location).title("Victim:"+"\t"+childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Break,Bruise,Cuts,Redness,Blistering"+"\n"+"\n"+"Exposed to: Vehicular Accident and Sodium Borohydride"+"\n"+"\n"+"Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+
+                            InfoWindowData infom = new InfoWindowData();
+
+                            infom.setDetails("Vehicular accident"+"\t"+"\t"+"Sodium Borohydride");
+
+                            infom.setExhibits("Break,"+"\t"+"Bruise,"+"\t"+"Cuts"+"\t"+"\t"+"Redness,"+"\t"+"Blistering");
+
+                            infom.setMitigations("Remove contaminated clothes"+"\n"+"Wash with a disinfectant"+"\n"+"Allow the victim to rest in a well ventillated area");
+
+
+                            CustomInfoWindowAdapter customInfoWindow = new CustomInfoWindowAdapter(MapsActivity.this);
+
+                            mMap.setInfoWindowAdapter(customInfoWindow);
+                            victim1LocationMarker.setTag(infom);
+                            //victim1LocationMarker.showInfoWindow();
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim1Location));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                            if(myMarkers.contains(victim1LocationMarker)){
+
+                            }else{
+                                myMarkers.add(victim1LocationMarker);
+                            }
+
+                            for(Marker m: myMarkers){
+                                if(m==victim1LocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+                        }else if(childData.contains("Leicy")){
+                            float victim2distance=getDistance(victim2Latitude,victim2Longitude);
+                            float distanceInFeet = (float) round((victim2distance*3.2808));
+                            Marker victim2LocationMarker=mMap.addMarker(new MarkerOptions().position(victim2Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Cut,Redness,Edema,Wheezing,Blistering,Unconsciousness"+"\n"+"\n"+"Exposed to: Vehicular Accident and Sodium Borohydride"+"\n"+"\n"+"Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+                            InfoWindowData infom = new InfoWindowData();
+
+                            infom.setDetails("Vehicular accident"+"\t"+"\t"+"Sodium Borohydride"+"\t"+"\t"+"Ricin Toxin");
+
+                            infom.setExhibits("Cuts, Unconsciousness"+"\t"+"Redness, Wheezing, Blistering"+"\t"+"Pulmonary Edema");
+
+                            infom.setMitigations("Remove contaminated clothes"+"\n"+"Wash with a disinfectant"+"\n"+"Allow the victim to rest in a well ventillated area"+"\n"+"Never give anything to drink for an unconscious victim");
+
+
+                            CustomInfoWindowAdapter customInfoWindow = new CustomInfoWindowAdapter(MapsActivity.this);
+
+                            mMap.setInfoWindowAdapter(customInfoWindow);
+                            victim2LocationMarker.setTag(infom);
+                            victim2LocationMarker.showInfoWindow();
+
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim2Location));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                            //victim2LocationMarker.showInfoWindow();
+                            if(myMarkers.contains(victim2LocationMarker)){
+
+                            }else{
+                                myMarkers.add(victim2LocationMarker);
+                            }
+                            for(Marker m: myMarkers){
+                                if(m==victim2LocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+
+                        }else if(childData.contains("Chris")){
+                            float victim3distance=getDistance(victim3Latitude,victim3Longitude);
+                            float distanceInFeet = (float) round((victim3distance*3.2808));
+                            Marker victim3LocationMarker=mMap.addMarker(new MarkerOptions().position(victim3Location).title("Victim:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Bruise,Cut,Redness,Edema,Wheezing,Blistering"+"\n"+"\n"+"Exposed to: Vehicular Accident, Sodium Borohydride and Ricin Toxin"+"\n"+"\n"+"Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+                            InfoWindowData infom = new InfoWindowData();
+
+                            infom.setDetails("Vehicular accident"+"\t"+"\t"+"Sodium Borohydride"+"\t"+"\t"+"Ricin Toxin ");
+
+
+                            infom.setExhibits("Cuts, Unconsciousness"+"\t"+"Redness, Wheezing, Blistering"+"\t"+"Pulmonary Edema");
+
+                            infom.setMitigations("Remove contaminated clothes"+"\n"+"Wash with a disinfectant"+"\n"+"Allow the victim to rest in a well ventillated area"+"\n"+"Never give anything to drink for an unconscious victim");
+
+                            CustomInfoWindowAdapter customInfoWindow = new CustomInfoWindowAdapter(MapsActivity.this);
+
+                            mMap.setInfoWindowAdapter(customInfoWindow);
+                            victim3LocationMarker.setTag(infom);
+                            victim3LocationMarker.showInfoWindow();
+
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim3Location));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                            //victim3LocationMarker.showInfoWindow();
+                            if(myMarkers.contains(victim3LocationMarker)){
+
+                            }else{
+                                myMarkers.add(victim3LocationMarker);
+                            }
+                            for(Marker m: myMarkers){
+                                if(m==victim3LocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+
+                        }else if(childData.contains("Middletown")){
+                            float victim3distance=getDistance(victim3Latitude,victim3Longitude);
+                            float distanceInFeet = (float) round((victim3distance*3.2808));
+                            Marker responder1LocationMarker=mMap.addMarker(new MarkerOptions().position(victim3Location).title("First Responders:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Susceptible to nearby hazards: Sodium Borohydride"+"\n"+"\n"+"Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+                            mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                @Override
+                                public View getInfoWindow(Marker arg0) {
+                                    return null;
+                                }
+
+                                @Override
+                                public View getInfoContents(Marker marker) {
+
+                                    LinearLayout info = new LinearLayout(MapsActivity.this);
+                                    info.setOrientation(LinearLayout.VERTICAL);
+
+                                    TextView title = new TextView(MapsActivity.this);
+                                    title.setTextColor(Color.BLACK);
+                                    title.setTypeface(null, Typeface.BOLD);
+                                    title.setText(marker.getTitle());
+
+                                    TextView snippet = new TextView(MapsActivity.this);
+                                    snippet.setTextColor(Color.DKGRAY);
+                                    snippet.setText(marker.getSnippet());
+
+                                    info.addView(title);
+                                    info.addView(snippet);
+
+                                    return info;
+                                }
+                            });
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim3Location));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                            //responder1LocationMarker.showInfoWindow();
+                            if(myMarkers.contains(responder1LocationMarker)){
+
+                            }else{
+                                myMarkers.add(responder1LocationMarker);
+                            }
+                            for(Marker m: myMarkers){
+                                if(m==responder1LocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+
+                        }else if(childData.contains("EMS")){
+                            float victim2distance=getDistance(victim2Latitude,victim2Longitude);
+                            float distanceInFeet = (float) round((victim2distance*3.2808));
+                            Marker responder2LocationMarker=mMap.addMarker(new MarkerOptions().position(victim2Location).title("First Responders:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Susceptible to nearby hazards: Sodium Borohydride, Ricin Toxin"+"\n"+"\n"+"Suggested Mitigations: Air bag, Seat belt,Gloves, Boots, Self contained breathing apparatus, Splash goggles"));
+                            mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                @Override
+                                public View getInfoWindow(Marker arg0) {
+                                    return null;
+                                }
+
+                                @Override
+                                public View getInfoContents(Marker marker) {
+
+                                    LinearLayout info = new LinearLayout(MapsActivity.this);
+                                    info.setOrientation(LinearLayout.VERTICAL);
+
+                                    TextView title = new TextView(MapsActivity.this);
+                                    title.setTextColor(Color.BLACK);
+                                    title.setTypeface(null, Typeface.BOLD);
+                                    title.setText(marker.getTitle());
+
+                                    TextView snippet = new TextView(MapsActivity.this);
+                                    snippet.setTextColor(Color.DKGRAY);
+                                    snippet.setText(marker.getSnippet());
+
+                                    info.addView(title);
+                                    info.addView(snippet);
+
+                                    return info;
+                                }
+                            });
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(victim2Location));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                            //responder2LocationMarker.showInfoWindow();
+                            if(myMarkers.contains(responder2LocationMarker)){
+
+                            }else{
+                                myMarkers.add(responder2LocationMarker);
+                            }
+                            for(Marker m: myMarkers){
+                                if(m==responder2LocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+
+                        }else if(childData.contains("Accident")){
+                            Marker incidentMarker=mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Vehicular Accident").snippet("can cause: Cuts, Bruises, Break, Unconsciousness"+"\n"+"\n"+"Suggested mitigations: Seat Belt, Air bag"));
+                            mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                @Override
+                                public View getInfoWindow(Marker arg0) {
+                                    return null;
+                                }
+
+                                @Override
+                                public View getInfoContents(Marker marker) {
+
+                                    LinearLayout info = new LinearLayout(MapsActivity.this);
+                                    info.setOrientation(LinearLayout.VERTICAL);
+
+                                    TextView title = new TextView(MapsActivity.this);
+                                    title.setTextColor(Color.BLACK);
+                                    title.setTypeface(null, Typeface.BOLD);
+                                    title.setText(marker.getTitle());
+
+                                    TextView snippet = new TextView(MapsActivity.this);
+                                    snippet.setTextColor(Color.DKGRAY);
+                                    snippet.setText(marker.getSnippet());
+
+                                    info.addView(title);
+                                    info.addView(snippet);
+
+                                    return info;
+                                }
+                            });
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                            //incidentMarker.showInfoWindow();
+                            if(myMarkers.contains(incidentMarker)){
+
+                            }else{
+                                myMarkers.add(incidentMarker);
+                            }
+                            for(Marker m: myMarkers){
+                                if(m==incidentMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+
+
+                        }else if(childData.contains("Sodium")){
+                            Marker sodiumBorohydrideLocationMarker=mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Sodium Borohydride").snippet("Physical description: Solid White Grayish powder"+"\n"+"\n"+"causes: Itching, Blindness, Redness, Scaling, Blistering, Coughing, Wheezing"+"\n"+"\n"+"Suggested mitigations: Gloves, Self Breathing apparatus, Boots, Splash goggles"+"\n"+"\n"+"First Aid: Remove contaminated clothes, Wash with a disinfectant, Allow the victim to rest in a well ventillated area"));
+                            mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                @Override
+                                public View getInfoWindow(Marker arg0) {
+                                    return null;
+                                }
+
+                                @Override
+                                public View getInfoContents(Marker marker) {
+
+                                    LinearLayout info = new LinearLayout(MapsActivity.this);
+                                    info.setOrientation(LinearLayout.VERTICAL);
+
+                                    TextView title = new TextView(MapsActivity.this);
+                                    title.setTextColor(Color.BLACK);
+                                    title.setTypeface(null, Typeface.BOLD);
+                                    title.setText(marker.getTitle());
+
+                                    TextView snippet = new TextView(MapsActivity.this);
+                                    snippet.setTextColor(Color.DKGRAY);
+                                    snippet.setText(marker.getSnippet());
+
+                                    info.addView(title);
+                                    info.addView(snippet);
+
+                                    return info;
+                                }
+                            });
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                            //sodiumBorohydrideLocationMarker.showInfoWindow();
+                            if(myMarkers.contains(sodiumBorohydrideLocationMarker)){
+
+                            }else{
+                                myMarkers.add(sodiumBorohydrideLocationMarker);
+                            }
+                            for(Marker m: myMarkers){
+                                if(m==sodiumBorohydrideLocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+                        }else if(childData.contains("Ricin")){
+                            Marker chemicalLocationMarker=mMap.addMarker(new MarkerOptions().position(incidentLocation).title("Ricin Toxin").snippet("causes: Fever, Cough, Pulmonary edema"+"\n"+"\n"+"Suggested mitigations: Gloves, Self Breathing apparatus, Boots, Splash goggles"+"\n"+"\n"+"First Aid: Remove contaminated clothes, Never give anything to drink for an unconscious victim"));
+                            mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                @Override
+                                public View getInfoWindow(Marker arg0) {
+                                    return null;
+                                }
+
+                                @Override
+                                public View getInfoContents(Marker marker) {
+
+                                    LinearLayout info = new LinearLayout(MapsActivity.this);
+                                    info.setOrientation(LinearLayout.VERTICAL);
+
+                                    TextView title = new TextView(MapsActivity.this);
+                                    title.setTextColor(Color.BLACK);
+                                    title.setTypeface(null, Typeface.BOLD);
+                                    title.setText(marker.getTitle());
+
+                                    TextView snippet = new TextView(MapsActivity.this);
+                                    snippet.setTextColor(Color.DKGRAY);
+                                    snippet.setText(marker.getSnippet());
+
+                                    info.addView(title);
+                                    info.addView(snippet);
+
+                                    return info;
+                                }
+                            });
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(incidentLocation));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(11), 2000, null);
+                            //chemicalLocationMarker.showInfoWindow();
+                            if(myMarkers.contains(chemicalLocationMarker)){
+
+                            }else{
+                                myMarkers.add(chemicalLocationMarker);
+                            }
+                            for(Marker m: myMarkers){
+                                if(m==chemicalLocationMarker){
+                                    m.setVisible(true);
+                                    m.showInfoWindow();
+                                }else{
+                                    m.setVisible(false);
+                                }
+                            }
+                        }
+                        else if(childData.contains("Will") || childData.contains("Sam")){
+
+                                float bystander1distance = getDistance(bystander1Latitude,bystander1Longitude);
+                                float distanceInFeet = (float) round((bystander1distance*3.2808));
+                                Marker bystander1LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander1Location).title("Bystander:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Susceptible to: Sodium Borohydride Exposure "+"\n"+"\n"+"Suggested mitigations: Gloves, Self Breathing apparatus, Boots, Splash goggles"));
+                                InfoWindowData infom = new InfoWindowData();
+
+                                infom.setDetails("Sodium Borohydride");
+
+                                infom.setExhibits("Redness,"+"\t"+"Scaling");
+
+                                infom.setMitigations("Remove contaminated clothes"+"\n"+"Wash with a disinfectant"+"\n"+"Allow the victim to rest in a well ventillated area");
+
+
+                                CustomInfoWindowAdapter customInfoWindow = new CustomInfoWindowAdapter(MapsActivity.this);
+
+                                mMap.setInfoWindowAdapter(customInfoWindow);
+                                bystander1LocationMarker.setTag(infom);
+                                bystander1LocationMarker.showInfoWindow();
+
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander1Location));
+                                mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                                //bystander1LocationMarker.showInfoWindow();
+                                if(myMarkers.contains(bystander1LocationMarker)){
+
+                                }else{
+                                    myMarkers.add(bystander1LocationMarker);
+                                }
+                                for(Marker m: myMarkers){
+                                    if(m==bystander1LocationMarker){
+                                        m.setVisible(true);
+                                        m.showInfoWindow();
+                                    }else{
+                                        m.setVisible(false);
+                                    }
+                                }
+
+                        }else if(childData.contains("Jessica") || childData.contains("Brandon")){
+                            if(myUpdates.toString().contains("edema")){
+                                float bystander2distance = getDistance(bystander2Latitude,bystander2Longitude);
+                                float distanceInFeet = (float) round((bystander2distance*3.2808));
+                                Marker bystander2LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander2Location).title("Bystander:" +childData+". "+distanceInFeet+" "+"feet from incident location").snippet("Exhibits: Scaling, Redness"+"\n"+"\n"+"Exposed To: Sodium Borohydride Exposure"+"Suggested mitigations: Gloves, Self Breathing apparatus, Boots, Splash goggles"));
+                                InfoWindowData infom = new InfoWindowData();
+
+                                infom.setDetails("Sodium Borohydride"+"\t"+"\t"+"Ricin Toxin");
+
+                                infom.setExhibits("");
+
+                                infom.setMitigations("");
+
+
+                                CustomInfoWindowAdapter customInfoWindow = new CustomInfoWindowAdapter(MapsActivity.this);
+
+                                mMap.setInfoWindowAdapter(customInfoWindow);
+                                bystander2LocationMarker.setTag(infom);
+                                bystander2LocationMarker.showInfoWindow();
+
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander2Location));
+                                mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                                //bystander2LocationMarker.showInfoWindow();
+                                if(myMarkers.contains(bystander2LocationMarker)){
+
+                                }else{
+                                    myMarkers.add(bystander2LocationMarker);
+                                }
+                                for(Marker m: myMarkers){
+                                    if(m==bystander2LocationMarker){
+                                        m.setVisible(true);
+                                        m.showInfoWindow();
+
+                                    }else{
+                                        m.setVisible(false);
+                                    }
+                                }
+                            }else{
+                                float bystander2distance = getDistance(bystander2Latitude,bystander2Longitude);
+                                float distanceInFeet = (float) round((bystander2distance*3.2808));
+                                Marker bystander2LocationMarker=mMap.addMarker(new MarkerOptions().position(bystander2Location).title("Bystander:" +childData+". "+distanceInFeet+" "+"feet from incident location"));
+                                InfoWindowData infom = new InfoWindowData();
+
+                                infom.setDetails("Sodium Borohydride");
+
+                                infom.setExhibits("");
+
+                                infom.setMitigations("");
+
+
+                                CustomInfoWindowAdapter customInfoWindow = new CustomInfoWindowAdapter(MapsActivity.this);
+
+                                mMap.setInfoWindowAdapter(customInfoWindow);
+                                bystander2LocationMarker.setTag(infom);
+                                bystander2LocationMarker.showInfoWindow();
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(bystander2Location));
+                                mMap.animateCamera(CameraUpdateFactory.zoomTo(14), 2000, null);
+                                //bystander2LocationMarker.showInfoWindow();
+                                if(myMarkers.contains(bystander2LocationMarker)){
+
+                                }else{
+                                    myMarkers.add(bystander2LocationMarker);
+                                }
+                                for(Marker m: myMarkers){
+                                    if(m==bystander2LocationMarker){
+                                        m.setVisible(true);
+                                        m.showInfoWindow();
+                                    }else{
+                                        m.setVisible(false);
+                                    }
+                                }
+                            }
+
+
+
+                        }else if(childData.contains("Cuts")||childData.contains("Bruises")){
+                            incidentDetailsListView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    incidentDetailsListView.requestFocusFromTouch();
+                                    incidentDetailsListView.smoothScrollToPosition(1);
+                                    incidentDetailsListView.setSelection(1);
+                                    incidentDetailsListView.requestFocus();
+
+                                }
+                            });
+
+                        }else if(childData.contains("Red skin")||childData.contains("Blisters")||childData.contains("Breathing Difficulty")){
+                            incidentDetailsListView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    incidentDetailsListView.requestFocusFromTouch();
+                                    incidentDetailsListView.smoothScrollToPosition(2);
+                                    incidentDetailsListView.setSelection(2);
+                                    incidentDetailsListView.requestFocus();
+
+                                }
+                            });
+
+                        }else if(childData.contains("edema")){
+                            incidentDetailsListView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    incidentDetailsListView.requestFocusFromTouch();
+                                    incidentDetailsListView.smoothScrollToPosition(3);
+                                    incidentDetailsListView.setSelection(3);
+                                    incidentDetailsListView.requestFocus();
+
+                                }
+                            });}
                         return false;
                     }
 
@@ -653,7 +1699,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.d("getUrl", googlePlacesUrl.toString());
         return (googlePlacesUrl.toString());
     }
-
+    private int getCount() {
+        int count = 0;
+        for (int i = 0; i < incidentListAdapter.getGroupCount(); i++) {
+            for (int j = 0; j < incidentListAdapter.getChildrenCount(i); j++) {
+                count++;
+            }
+            count++;
+        }
+        return count;
+    }
     private void prepareListData(String data,String data1) {
 
         listDataHeader = new ArrayList<String>();
@@ -672,342 +1727,196 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         } else {
             for(int i=0;i<oldUpdates.size();i++){
-                incidentUpdates.add(0,oldUpdates.get(i));
+                incidentUpdates.add(oldUpdates.get(i));
             }
         }
         incidentUpdates.add(0,data1);
         listDataChild.put(listDataHeader.get(0),(incidentUpdates));// Header, Child data
-        oldUpdates.add(data1);
+
+
+        oldUpdates.add(0,data1);
     }
 
-    private void prepareRiskData(String data) {
-
-        if(data.contains("Vehicular accident")){
-            // Adding child data
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("Vehicular Accident");
-
-            List<String> riskUpdates = new ArrayList<String>();
-            // Adding child data
-            riskUpdates.add("type");
-            riskUpdates.add("canCause");
-            riskUpdates.add("Cut");
-            riskUpdates.add("Break");
-            riskUpdates.add("Bruise");
-            riskUpdates.add("Unconsciousness");
-            riskUpdates.add("mitigatedBy");
-            riskUpdates.add("Seat Belt");
-            riskUpdates.add("Air Bag");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));// Header, Child data
-
-        }
-        if(data.contains("Chemical truck")){
-            // Adding child data
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("Chemical Truck");
-            riskDataHeader.add("Chemicals");
-            riskDataHeader.add("Chemical Hazard");
-            // Adding child data
-            List<String> riskUpdates = new ArrayList<String>();
-            List<String> riskUpdates1 = new ArrayList<String>();
-            List<String> riskUpdates2 = new ArrayList<String>();
-            List<String> riskUpdates3 = new ArrayList<String>();
-            riskUpdates.add("canCarry");
-            riskUpdates1.add("canCause");
-            riskUpdates2.add("canCause");
-            riskUpdates2.add("Itching");
-            riskUpdates2.add("Blindness");
-            riskUpdates2.add("Blistering");
-            riskUpdates2.add("Scaling");
-            riskUpdates2.add("Redness");
-            riskUpdates2.add("Corneal Damage");
-            riskUpdates2.add("Coughing");
-            riskUpdates2.add("Sneezing");
-            riskUpdates2.add("mitigatedBy");
-            riskUpdates2.add("Full suit");
-            riskUpdates2.add("Gloves");
-            riskUpdates2.add("Boots");
-            riskUpdates2.add("Self contained breathing apparatus");
-            riskUpdates2.add("Splash goggles");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
-            riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
-            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));// Header, Child data
-
-        }
-        if(data.contains("First responders")){
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("First Responders");
-            riskDataHeader.add("Vehicular Accident");
-            riskDataHeader.add("Chemical Hazard");
-            List<String> riskUpdates = new ArrayList<String>();
-            List<String> riskUpdates1 = new ArrayList<String>();
-            List<String> riskUpdates2 = new ArrayList<String>();
-            riskUpdates.add("type");
-            riskUpdates.add("are susceptibleTo");
-            riskUpdates.add("Vehicular Accident");
-            riskUpdates.add("Chemical Hazard");
-            riskUpdates1.add("canCause");
-            riskUpdates1.add("Cut");
-            riskUpdates1.add("Break");
-            riskUpdates1.add("Bruise");
-            riskUpdates1.add("Unconsciousness");
-            riskUpdates2.add("canCause");
-            riskUpdates2.add("Itching");
-            riskUpdates2.add("Blindness");
-            riskUpdates2.add("Blistering");
-            riskUpdates2.add("Scaling");
-            riskUpdates2.add("Redness");
-            riskUpdates2.add("Corneal Damage");
-            riskUpdates2.add("Coughing");
-            riskUpdates2.add("Sneezing");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
-            riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
-            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));
-
-        }
-       if(data.contains("Bystanders")){
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("Bystanders");
-            riskDataHeader.add("Vehicular Accident");
-            riskDataHeader.add("Chemical Hazard");
-            List<String> riskUpdates = new ArrayList<String>();
-            List<String> riskUpdates1 = new ArrayList<String>();
-            List<String> riskUpdates2 = new ArrayList<String>();
-            riskUpdates.add("type");
-            riskUpdates.add("are susceptibleTo");
-            riskUpdates.add("Vehicular Accident");
-            riskUpdates.add("Chemical Hazard");
-            riskUpdates1.add("canCause");
-            riskUpdates1.add("Cut");
-            riskUpdates1.add("Break");
-            riskUpdates1.add("Bruise");
-            riskUpdates1.add("Unconsciousness");
-            riskUpdates2.add("canCause");
-            riskUpdates2.add("Itching");
-            riskUpdates2.add("Blindness");
-            riskUpdates2.add("Blistering");
-            riskUpdates2.add("Scaling");
-            riskUpdates2.add("Redness");
-            riskUpdates2.add("Corneal Damage");
-            riskUpdates2.add("Coughing");
-            riskUpdates2.add("Sneezing");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
-            riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
-            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));
-        }
-       if(data.contains("EMT")){
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("EMT Response Team");
-            List<String> riskUpdates = new ArrayList<String>();
-            riskUpdates.add("canTreat");
-            riskUpdates.add("Cut");
-            riskUpdates.add("Break");
-            riskUpdates.add("Bruise");
-            riskUpdates.add("Unconsciousness");
-            riskUpdates.add("Itching");
-            riskUpdates.add("Blindness");
-            riskUpdates.add("Blistering");
-            riskUpdates.add("Scaling");
-            riskUpdates.add("Redness");
-            riskUpdates.add("Corneal Damage");
-            riskUpdates.add("Coughing");
-            riskUpdates.add("Sneezing");
-            riskUpdates.add("type");
-            riskUpdates.add("are susceptibleTo");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
-
-        }if(data.contains("Symptoms")){
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("Victims");
-            riskDataHeader.add("Sodium Borohydride");
-            riskDataHeader.add("Chemical Hazard");
-            riskDataHeader.add("Vehicular Accident");
-            riskDataHeader.add("EMT Response Team");
-            List<String> riskUpdates = new ArrayList<String>();
-            List<String> riskUpdates1 = new ArrayList<String>();
-            List<String> riskUpdates2 = new ArrayList<String>();
-            List<String> riskUpdates3 = new ArrayList<String>();
-            List<String> riskUpdates4 = new ArrayList<String>();
-            riskUpdates.add("exhibits");
-            riskUpdates.add("Cuts");
-            riskUpdates.add("Bruises");
-            riskUpdates.add("Redness");
-            riskUpdates.add("Blisters");
-            riskUpdates.add("Breathing difficulty");
-            riskUpdates.add("Edema");
-            riskUpdates1.add("canCause");
-            riskUpdates1.add("Itching");
-            riskUpdates1.add("Blindness");
-            riskUpdates1.add("Blistering");
-            riskUpdates1.add("Scaling");
-            riskUpdates1.add("Redness");
-            riskUpdates1.add("Corneal Damage");
-            riskUpdates1.add("Coughing");
-            riskUpdates1.add("Sneezing");
-            riskUpdates2.add("canCause");
-            riskUpdates2.add("Edema");
-            riskUpdates3.add("canCause");
-            riskUpdates3.add("Cut");
-            riskUpdates3.add("Break");
-            riskUpdates3.add("Bruise");
-            riskUpdates3.add("Unconsciousness");
-            riskUpdates4.add("canTreat");
-            riskUpdates4.add("Cut");
-            riskUpdates4.add("Break");
-            riskUpdates4.add("Bruise");
-            riskUpdates4.add("Unconsciousness");
-            riskUpdates4.add("Itching");
-            riskUpdates4.add("Blindness");
-            riskUpdates4.add("Blistering");
-            riskUpdates4.add("Scaling");
-            riskUpdates4.add("Redness");
-            riskUpdates4.add("Corneal Damage");
-            riskUpdates4.add("Coughing");
-            riskUpdates4.add("Sneezing");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
-            riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
-            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));
-            riskDataChild.put(riskDataHeader.get(3),(riskUpdates3));
-            riskDataChild.put(riskDataHeader.get(4),(riskUpdates4));
-        }
-        if(data.contains("Bystanders")&&data.contains("exhibits")){
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("Bystanders");
-            riskDataHeader.add("Vehicular Accident");
-            riskDataHeader.add("Chemical Hazard");
-            List<String> riskUpdates = new ArrayList<String>();
-            List<String> riskUpdates1 = new ArrayList<String>();
-            List<String> riskUpdates2 = new ArrayList<String>();
-            riskUpdates.add("type");
-            riskUpdates.add("are susceptibleTo");
-            riskUpdates.add("Vehicular Accident");
-            riskUpdates.add("Chemical Hazard");
-            riskUpdates.add("exhibits");
-            riskUpdates.add("Scaling");
-            riskUpdates.add("Redness");
-            riskUpdates1.add("canCause");
-            riskUpdates1.add("Cut");
-            riskUpdates1.add("Break");
-            riskUpdates1.add("Bruise");
-            riskUpdates1.add("Unconsciousness");
-            riskUpdates2.add("canCause");
-            riskUpdates2.add("Itching");
-            riskUpdates2.add("Blindness");
-            riskUpdates2.add("Blistering");
-            riskUpdates2.add("Scaling");
-            riskUpdates2.add("Redness");
-            riskUpdates2.add("Corneal Damage");
-            riskUpdates2.add("Coughing");
-            riskUpdates2.add("Sneezing");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0),(riskUpdates));
-            riskDataChild.put(riskDataHeader.get(1),(riskUpdates1));
-            riskDataChild.put(riskDataHeader.get(2),(riskUpdates2));
-        }
-        if(data.contains("Sodium borohydride")) {
-            // Adding child data
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("Sodium Borohydride");
-            List<String> riskUpdates = new ArrayList<String>();
-            // Adding child data
-            riskUpdates.add("type");
-            riskUpdates.add("hasPhysicalDescription");
-            riskUpdates.add("hasFormula");
-            riskUpdates.add("hasSynonym");
-            riskUpdates.add("canCause");
-            riskUpdates.add("Itching");
-            riskUpdates.add("Blindness");
-            riskUpdates.add("Blistering");
-            riskUpdates.add("Scaling");
-            riskUpdates.add("Redness");
-            riskUpdates.add("Corneal Damage");
-            riskUpdates.add("Coughing");
-            riskUpdates.add("Sneezing");
-            riskUpdates.add("mitigatedBy");
-            riskUpdates.add("Gloves");
-            riskUpdates.add("FullSuit");
-            riskUpdates.add("Boots");
-            riskUpdates.add("SplashGoggles");
-            riskUpdates.add("SelfBreathingApparatus");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0), (riskUpdates));// Header, Child data
-
-        }if(data.contains("Police")){
-            riskDataHeader = new ArrayList<String>();
-            riskDataHeader.add("Victim");
-            riskDataHeader.add("Chemical Hazard");
-            List<String> riskUpdates = new ArrayList<String>();
-            List<String> riskUpdates1 = new ArrayList<String>();
-            riskUpdates.add("exhibits");
-            riskUpdates.add("Edema");
-            riskUpdates1.add("canCause");
-            riskUpdates1.add("Edema");
-            riskDataChild = new HashMap<String, List<String>>();
-            riskDataChild.put(riskDataHeader.get(0), (riskUpdates));
-            riskDataChild.put(riskDataHeader.get(1), (riskUpdates1));// Header, Child data
-        }
-
-    }
 
     private void prepareIncidentListData(String data) {
 
         if(data.contains("Vehicular accident")){
+            incidentListDataHeader = new ArrayList<String>();
+            incidentListDataChild = new HashMap<String,List<String>>();
             // Adding child data
             incidentListDataHeader.add("Hazards");
-            // Adding child data
-            hazardsList.add("Vehicular Accident");
-            incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList); // Header, Child data
-        }
-        if(data.contains("Chemical truck")){
-            // Adding child data
             incidentListDataHeader.add("Victims");
+            incidentListDataHeader.add("Bystanders");
+            incidentListDataHeader.add("Responders");
+            incidentListDataHeader.add("Symptoms found on scene");
+
             // Adding child data
+            hazardsList = new ArrayList<String>();
+            hazardsList.add("Vehicular Accident");
+            hazardsList.add("Sodium Borohydride");
+            victimsList = new ArrayList<String>();
             victimsList.add("Winston, Todd");
             victimsList.add("Leicy, Mary");
             victimsList.add("Stevenson, Chris");
-            incidentListDataChild.put(incidentListDataHeader.get(1), victimsList); // Header, Child data
-        }
-        if(data.contains("First responders")){
-            // Adding child data
-            incidentListDataHeader.add("Responders");
-            //Adding child data
-            respondersList.add("Middletown police Department");
-            incidentListDataChild.put(incidentListDataHeader.get(2), respondersList);
-        }
-        if(data.contains("Bystanders")&&data.contains("truck")){
-            // Adding child data
-            incidentListDataHeader.add("Bystanders");
+            symptomsList = new ArrayList<String>();
+            symptomsList.add("Cuts, Bruises, Broken leg");
+            symptomsList.add("Red skin, Blisters, Scaling");
+            bystandersList = new ArrayList<String>();
             bystandersList.add("Connor, Will");
             bystandersList.add("Smith, Sam");
             bystandersList.add("Taylor, Jessica");
             bystandersList.add("Duber, Brandon");
-            incidentListDataChild.put(incidentListDataHeader.get(3), bystandersList);
+
+            respondersList = new ArrayList<String>();
+            respondersList.add("No Responders available on scene");
+            incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList);
+            incidentListDataChild.put(incidentListDataHeader.get(1), victimsList);
+            incidentListDataChild.put(incidentListDataHeader.get(2), bystandersList);
+            incidentListDataChild.put(incidentListDataHeader.get(3), respondersList);
+            incidentListDataChild.put(incidentListDataHeader.get(4), symptomsList);
+              // Header, Child data
         }
-        if(data.contains("EMT")){
+        if(data.contains("Middletown police")){
+            incidentListDataHeader = new ArrayList<String>();
+            incidentListDataChild = new HashMap<String,List<String>>();
             // Adding child data
-            respondersList.add("EMT");
-            incidentListDataChild.put(incidentListDataHeader.get(2), respondersList);
-        }
-        if(data.contains("Symptoms")){
-            // Adding child data
+            incidentListDataHeader.add("Hazards");
+            incidentListDataHeader.add("Victims");
+            incidentListDataHeader.add("Bystanders");
+            incidentListDataHeader.add("Responders");
             incidentListDataHeader.add("Symptoms found on scene");
-            symptomsList.add("Cuts");
-            symptomsList.add("Bruises");
-            symptomsList.add("Red skin");
-            symptomsList.add("Blisters");
-            symptomsList.add("Breathing difficulty");
-            symptomsList.add("Edema");
+            // Adding child data
+            hazardsList = new ArrayList<String>();
+            hazardsList.add("Vehicular Accident");
+            hazardsList.add("Sodium Borohydride");
+            victimsList = new ArrayList<String>();
+            victimsList.add("Winston, Todd");
+            victimsList.add("Leicy, Mary");
+            victimsList.add("Stevenson, Chris");
+
+            respondersList = new ArrayList<String>();
+            respondersList.add("Middletown police Department");
+
+            symptomsList = new ArrayList<String>();
+            symptomsList.add("Cuts, Bruises, Broken leg");
+            symptomsList.add("Red skin, Blisters, Scaling");
+            bystandersList = new ArrayList<String>();
+            bystandersList.add("Connor, Will");
+            bystandersList.add("Smith, Sam");
+            bystandersList.add("Taylor, Jessica");
+            bystandersList.add("Duber, Brandon");
+            incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList);
+            incidentListDataChild.put(incidentListDataHeader.get(1), victimsList);
+            incidentListDataChild.put(incidentListDataHeader.get(2), bystandersList);
+            incidentListDataChild.put(incidentListDataHeader.get(3), respondersList);
+            incidentListDataChild.put(incidentListDataHeader.get(4), symptomsList);
+            // Header, Child data
+        }
+        if(data.contains("EMS")){
+            incidentListDataHeader = new ArrayList<String>();
+            incidentListDataChild = new HashMap<String,List<String>>();
+            incidentListDataHeader.add("Hazards");
+            incidentListDataHeader.add("Victims");
+            incidentListDataHeader.add("Bystanders");
+            incidentListDataHeader.add("Responders");
+            incidentListDataHeader.add("Symptoms found on scene");
+
+            // Adding child data
+            hazardsList = new ArrayList<String>();
+            hazardsList.add("Vehicular Accident");
+            hazardsList.add("Sodium Borohydride");
+            victimsList = new ArrayList<String>();
+            victimsList.add("Winston, Todd");
+            victimsList.add("Leicy, Mary");
+            victimsList.add("Stevenson, Chris");
+            respondersList = new ArrayList<String>();
+            respondersList.add("EMS");
+            respondersList.add("Middletown police Department");
+            symptomsList = new ArrayList<String>();
+            symptomsList.add("Cuts, Bruises, Broken leg");
+            symptomsList.add("Red skin, Blisters, Scaling");
+            bystandersList = new ArrayList<String>();
+            bystandersList.add("Connor, Will");
+            bystandersList.add("Smith, Sam");
+            bystandersList.add("Taylor, Jessica");
+            bystandersList.add("Duber, Brandon");
+
+            incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList);
+            incidentListDataChild.put(incidentListDataHeader.get(1), victimsList);
+            incidentListDataChild.put(incidentListDataHeader.get(2), bystandersList);
+            incidentListDataChild.put(incidentListDataHeader.get(3), respondersList);
+            incidentListDataChild.put(incidentListDataHeader.get(4), symptomsList);;// Header, Child data
+        }
+
+        if(data.contains("edema")){
+            incidentListDataHeader = new ArrayList<String>();
+            incidentListDataChild = new HashMap<String,List<String>>();
+            // Adding child data
+            incidentListDataHeader.add("Hazards");
+            incidentListDataHeader.add("Victims");
+            incidentListDataHeader.add("Bystanders");
+            incidentListDataHeader.add("Responders");
+            incidentListDataHeader.add("Symptoms found on scene");
+            hazardsList = new ArrayList<String>();
+            hazardsList.add("Vehicular Accident");
+            hazardsList.add("Sodium Borohydride");
+            hazardsList.add("Ricin Toxin");
+            victimsList = new ArrayList<String>();
+            victimsList.add("Winston, Todd");
+            victimsList.add("Leicy, Mary");
+            victimsList.add("Stevenson, Chris");
+            respondersList = new ArrayList<String>();
+            respondersList.add("Middletown police Department");
+            respondersList.add("EMS");
+            bystandersList = new ArrayList<String>();
+            bystandersList.add("Connor, Will");
+            bystandersList.add("Smith, Sam");
+            bystandersList.add("Taylor, Jessica");
+            bystandersList.add("Duber, Brandon");
+            symptomsList = new ArrayList<String>();
+            symptomsList.add("Pulmonary edema");
+            symptomsList.add("Cuts, Bruises, Broken leg");
+            symptomsList.add("Red skin, Blisters, Scaling");
+
+            incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList);
+            incidentListDataChild.put(incidentListDataHeader.get(1), victimsList);
+            incidentListDataChild.put(incidentListDataHeader.get(3), respondersList);
+            incidentListDataChild.put(incidentListDataHeader.get(2), bystandersList);
             incidentListDataChild.put(incidentListDataHeader.get(4), symptomsList);
         }
         if(data.contains("Sodium")){
+            incidentListDataHeader = new ArrayList<String>();
+            incidentListDataChild = new HashMap<String,List<String>>();
+            incidentListDataHeader.add("Hazards");
+            incidentListDataHeader.add("Victims");
+            incidentListDataHeader.add("Bystanders");
+            incidentListDataHeader.add("Responders");
+            incidentListDataHeader.add("Symptoms found on scene");
+            hazardsList = new ArrayList<String>();
+            hazardsList.add("Vehicular Accident");
             hazardsList.add("Sodium Borohydride");
+            victimsList = new ArrayList<String>();
+            victimsList.add("Winston, Todd");
+            victimsList.add("Leicy, Mary");
+            victimsList.add("Stevenson, Chris");
+            respondersList = new ArrayList<String>();
+            respondersList.add("Middletown police Department");
+            respondersList.add("EMS");
+            bystandersList = new ArrayList<String>();
+            bystandersList.add("Connor, Will");
+            bystandersList.add("Smith, Sam");
+            bystandersList.add("Taylor, Jessica");
+            bystandersList.add("Duber, Brandon");
+            symptomsList = new ArrayList<String>();
+            symptomsList.add("Cuts, Bruises, Broken leg");
+            symptomsList.add("Red skin, Blisters, Scaling");
             incidentListDataChild.put(incidentListDataHeader.get(0), hazardsList);
+            incidentListDataChild.put(incidentListDataHeader.get(1), victimsList);
+            incidentListDataChild.put(incidentListDataHeader.get(3), respondersList);
+            incidentListDataChild.put(incidentListDataHeader.get(2), bystandersList);
+            incidentListDataChild.put(incidentListDataHeader.get(4), symptomsList);
+
+
         }
 
     }

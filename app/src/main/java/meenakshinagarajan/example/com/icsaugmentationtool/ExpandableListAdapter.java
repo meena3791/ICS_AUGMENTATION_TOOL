@@ -60,9 +60,6 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
                     .findViewById(R.id.lblListItem);
             txtListChild.setText(childText);
 
-        TextView txtListDateChild = (TextView) convertView
-                .findViewById(R.id.dateTime);
-        txtListDateChild.setText(" ");
 
         return convertView;
     }
@@ -91,12 +88,16 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter{
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
+
         String headerTitle = (String) getGroup(groupPosition);
         if (convertView == null) {
             LayoutInflater infalInflater = (LayoutInflater) this._context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = infalInflater.inflate(R.layout.list_group, null);
+
         }
+
+
 
         TextView lblListHeader = (TextView) convertView
                 .findViewById(R.id.lblListHeader);

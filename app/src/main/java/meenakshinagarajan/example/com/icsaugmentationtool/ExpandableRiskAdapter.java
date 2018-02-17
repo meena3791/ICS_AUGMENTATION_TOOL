@@ -69,7 +69,7 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                     holder.textView = new TextView(holder.itemView.getContext());
                     holder.textView1 = new TextView(holder.itemView.getContext());
                     holder.textViewHeader.setText(key);
-                    if (values.get(i).contains("can")) {
+                    if (values.get(i).contains("can")||values.get(i).contains("causes")) {
                         holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.textView.setText(values.get(i));
@@ -77,11 +77,11 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                             holder.textView1.setText("Symptoms");
                         }else if(key.contains("Chemical Truck")){
                             holder.textView1.setText("Chemicals");
-                        }else if(key.contains("EMT")){
+                        }else if(key.contains("EMS")){
                             holder.textView1.setText("Symptoms");
                         }
 
-                    } else if (values.get(i).contains("mitigatedBy")) {
+                    } else if (values.get(i).contains("mitigatedBy") || values.get(i).contains("Mitigations")) {
                         holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.textView1.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.textView.setText(values.get(i));
@@ -105,17 +105,17 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                         }else {
                             holder.textView1.setText("Person");
                         }
-                    } else if (values.get(i).contains("hasPhysicalDescription")) {
+                    } else if (values.get(i).contains("Physical State")) {
                         holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.textView1.setTypeface(Typeface.DEFAULT);
                         holder.textView.setText(values.get(i));
                         holder.textView1.setText("solid. white. grayish white. easily soluble in cold water");
-                    } else if (values.get(i).contains("hasFormula")) {
+                    } else if (values.get(i).contains("Formula")) {
                         holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.textView1.setTypeface(Typeface.DEFAULT);
                         holder.textView.setText(values.get(i));
                         holder.textView1.setText("NaBH4");
-                    } else if (values.get(i).contains("hasSynonym")) {
+                    } else if (values.get(i).contains("Synonym")) {
                         holder.textView.setTypeface(Typeface.DEFAULT_BOLD);
                         holder.textView1.setTypeface(Typeface.DEFAULT);
                         holder.textView.setText(values.get(i));
@@ -191,7 +191,7 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                         holder.textView1.setText("Symptoms");
                     }else if(key=="Chemical Hazard"){
                         holder.textView1.setText("Symptoms");
-                    }else if(key.contains("EMT")){
+                    }else if(key.contains("EMS")){
                         holder.textView1.setText("Symptoms");
                     }
                 }  else if (values.get(i).contains("mitigatedBy")) {
@@ -233,7 +233,7 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                         holder.textView1.setText("Symptoms");
                     }else if(key=="Chemical Hazard"){
                         holder.textView1.setText("Symptoms");
-                    }else if(key.contains("EMT")){
+                    }else if(key.contains("EMS")){
                         holder.textView1.setText("Symptoms");
                     }
                 }  else if (values.get(i).contains("mitigatedBy")) {
@@ -279,7 +279,7 @@ public class ExpandableRiskAdapter extends RecyclerView.Adapter<ExpandableRiskAd
                         holder.textView1.setText("Symptoms");
                     }else if(key=="Chemical Hazard"){
                         holder.textView1.setText("Symptoms");
-                    }else if(key.contains("EMT")){
+                    }else if(key.contains("EMS")){
                         holder.textView1.setText("Symptoms");
                     }
                 }  else if (values.get(i).contains("mitigatedBy")) {

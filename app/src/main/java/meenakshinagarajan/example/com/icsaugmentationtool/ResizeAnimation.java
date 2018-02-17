@@ -9,22 +9,26 @@ import android.view.animation.Transformation;
  */
 
 public class ResizeAnimation extends Animation {
-    final int targetWidth;
+    final int targetWidth,targetHeight;
     View view;
-    int startWidth;
+    int startWidth,startHeight;
 
-    public ResizeAnimation(View view, int targetWidth, int startWidth) {
+    public ResizeAnimation(View view, int targetWidth, int startWidth,int targetHeight,int startHeight) {
         this.view = view;
         this.targetWidth = targetWidth;
         this.startWidth = startWidth;
+        this.targetHeight = targetHeight;
+        this.startHeight = targetHeight;
     }
 
     @Override
     protected void applyTransformation(float interpolatedTime, Transformation t) {
-        int newHeight = (int) (startWidth + (targetWidth-startWidth) * interpolatedTime);
+        int newWidth = (int) (startWidth + (targetWidth-startWidth) * interpolatedTime);
+        int newHeight = (int) (startHeight + (targetHeight-startHeight) * interpolatedTime);
         //to support decent animation, change new heigt as Nico S. recommended in comments
         //int newHeight = (int) (startHeight+(targetHeight - startHeight) * interpolatedTime);
-        view.getLayoutParams().width = newHeight;
+        view.getLayoutParams().width = newWidth;
+        view.getLayoutParams().height=newHeight;
         view.requestLayout();
     }
 

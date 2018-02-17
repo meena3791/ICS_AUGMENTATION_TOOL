@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="2dp"
         android:textSize="20sp"
+        android:clickable="false"
         android:textAllCaps="true"
         android:textColor="@color/colorText" />
 
